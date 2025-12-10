@@ -1,0 +1,1846 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QF Design System — Communications Dashboard</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- React & ReactDOM -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  
+  <!-- Babel for JSX -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  
+  <style>
+    /* Smooth scrolling */
+    html { scroll-behavior: smooth; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  
+  <script type="text/babel">
+    const { useState } = React;
+
+    // =============================================================================
+    // QF COMMUNICATIONS DASHBOARD — DESIGN SYSTEM v2.1
+    // =============================================================================
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // HELPER COMPONENTS
+    // ─────────────────────────────────────────────────────────────────────────────
+
+    const ColorSwatch = ({ color, name, hex, size = 'default' }) => {
+      const [copied, setCopied] = useState(false);
+      
+      const copyToClipboard = () => {
+        navigator.clipboard.writeText(hex);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1500);
+      };
+
+      const isLight = (hexColor) => {
+        const r = parseInt(hexColor.slice(1, 3), 16);
+        const g = parseInt(hexColor.slice(3, 5), 16);
+        const b = parseInt(hexColor.slice(5, 7), 16);
+        return (r * 299 + g * 587 + b * 114) / 1000 > 128;
+      };
+      
+      const heights = { small: 'h-12', default: 'h-16', large: 'h-20' };
+      
+      return (
+        <div className="cursor-pointer group relative" onClick={copyToClipboard}>
+          <div 
+            className={`${heights[size]} rounded-lg border border-black/5 transition-all group-hover:scale-105 group-hover:shadow-md flex items-end p-2`}
+            style={{ backgroundColor: color }}
+          >
+            <span className={`text-xs font-medium ${isLight(color) ? 'text-gray-700' : 'text-white/80'}`}>
+              {name}
+            </span>
+          </div>
+          <p className="text-xs text-gray-500 font-mono mt-1 text-center">{hex}</p>
+          {copied && (
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#0B241C] text-white text-xs px-2 py-1 rounded z-10">
+              Copied!
+            </div>
+          )}
+        </div>
+      );
+    };
+
+    const Tooltip = ({ children, visible, position = 'top' }) => {
+      if (!visible) return null;
+      const positions = {
+        top: 'bottom-full left-1/2 -translate-x-1/2 mb-2',
+        center: 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2',
+        right: 'left-full top-1/2 -translate-y-1/2 ml-2',
+      };
+      return (
+        <div className={`absolute ${positions[position]} bg-white border border-[#E8E8E5] rounded-lg shadow-lg px-4 py-3 pointer-events-none z-20 whitespace-nowrap`}>
+          {children}
+        </div>
+      );
+    };
+
+    const SectionCard = ({ id, title, description, children }) => (
+      <section id={id} className="bg-white rounded-xl p-6 border border-[#E8E8E5] mb-6 scroll-mt-6">
+        <div className="mb-6">
+          <h2 className="text-lg font-semibold text-[#0B241C]">{title}</h2>
+          {description && <p className="text-sm text-[#4A7561] mt-1">{description}</p>}
+        </div>
+        {children}
+      </section>
+    );
+
+    // SIDEBAR NAVIGATION (Figma MCP style)
+    const Sidebar = () => {
+      const [activeSection, setActiveSection] = useState('');
+      const [expandedSections, setExpandedSections] = useState({
+        colors: true,
+        charts: true,
+        reference: true,
+      });
+
+      const toggleSection = (sectionId) => {
+        setExpandedSections(prev => ({
+          ...prev,
+          [sectionId]: !prev[sectionId]
+        }));
+      };
+
+      const sections = [
+        {
+          id: 'colors',
+          label: 'Colors',
+          children: [
+            { id: 'sidra-green', label: 'Sidra Green' },
+            { id: 'sage', label: 'Sage' },
+            { id: 'neutrals', label: 'Neutrals' },
+            { id: 'categorical', label: 'Categorical' },
+            { id: 'semantic', label: 'Semantic' },
+          ]
+        },
+        {
+          id: 'charts',
+          label: 'Charts',
+          children: [
+            { id: 'stat-card', label: 'Stat Card' },
+            { id: 'trend-line', label: 'Trend Line' },
+            { id: 'horizontal-bar', label: 'Horizontal Bar' },
+            { id: 'horizontal-stacked', label: 'Horizontal Stacked' },
+            { id: 'vertical-bar', label: 'Vertical Bar' },
+            { id: 'comparison-bar', label: 'Comparison Bar' },
+            { id: 'vertical-stacked', label: 'Vertical Stacked' },
+            { id: 'donut', label: 'Donut Chart' },
+            { id: 'treemap', label: 'Treemap' },
+            { id: 'index-scale', label: 'Index Scale' },
+            { id: 'waffle', label: 'Waffle Chart' },
+            { id: 'bubble', label: 'Bubble Chart' },
+            { id: 'post', label: 'Post' },
+          ]
+        },
+        {
+          id: 'reference',
+          label: 'Reference',
+          children: [
+            { id: 'typography', label: 'Typography' },
+            { id: 'spacing', label: 'Spacing' },
+          ]
+        },
+      ];
+
+      // Get all child IDs for scroll tracking
+      const allChildIds = sections.flatMap(s => s.children.map(c => c.id));
+
+      // Track active section on scroll
+      React.useEffect(() => {
+        const handleScroll = () => {
+          for (const id of allChildIds) {
+            const el = document.getElementById(id);
+            if (el) {
+              const rect = el.getBoundingClientRect();
+              if (rect.top <= 100 && rect.bottom > 100) {
+                setActiveSection(id);
+                break;
+              }
+            }
+          }
+        };
+        window.addEventListener('scroll', handleScroll);
+        handleScroll();
+        return () => window.removeEventListener('scroll', handleScroll);
+      }, []);
+
+      // Chevron icon
+      const ChevronIcon = ({ isOpen }) => (
+        <svg
+          width="12"
+          height="12"
+          viewBox="0 0 12 12"
+          fill="none"
+          className={`transition-transform duration-200 ${isOpen ? 'rotate-0' : '-rotate-90'}`}
+        >
+          <path
+            d="M2.5 4.5L6 8L9.5 4.5"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+        </svg>
+      );
+
+      return (
+        <div className="fixed left-0 top-0 h-screen w-56 bg-white border-r border-[#E8E8E5] z-50 overflow-y-auto">
+          {/* Header */}
+          <div className="px-5 py-4 border-b border-[#E8E8E5]">
+            <p className="text-[11px] font-semibold uppercase tracking-wider text-[#737370]">
+              QF Design System
+            </p>
+          </div>
+
+          {/* Navigation */}
+          <nav className="py-4">
+            {sections.map((section, sectionIndex) => (
+              <div key={section.id} className={sectionIndex > 0 ? 'mt-2 pt-2 border-t border-[#E8E8E5] mx-5' : ''}>
+                {/* Section header with toggle */}
+                <button
+                  onClick={() => toggleSection(section.id)}
+                  className="w-full flex items-center justify-between px-5 py-2 text-left hover:bg-[#FAFAF9] transition-colors"
+                >
+                  <span className="text-sm font-medium text-[#1A1A18]">{section.label}</span>
+                  <ChevronIcon isOpen={expandedSections[section.id]} />
+                </button>
+
+                {/* Children */}
+                <div className={`overflow-hidden transition-all duration-200 ${expandedSections[section.id] ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}>
+                  {section.children.map((child) => (
+                    <a
+                      key={child.id}
+                      href={`#${child.id}`}
+                      className={`block pl-8 pr-5 py-1.5 text-sm transition-colors ${
+                        activeSection === child.id
+                          ? 'text-[#11362A] font-medium bg-[#F4F6F0]'
+                          : 'text-[#5C5C59] hover:text-[#1A1A18] hover:bg-[#FAFAF9]'
+                      }`}
+                    >
+                      {child.label}
+                    </a>
+                  ))}
+                </div>
+              </div>
+            ))}
+          </nav>
+        </div>
+      );
+    };
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // CHART COMPONENTS
+    // ─────────────────────────────────────────────────────────────────────────────
+
+    // STAT CARD
+    const StatCard = ({ title, value, trend, trendLabel = "from previous period", description, icon }) => {
+      const isPositive = trend >= 0;
+      const trendColor = isPositive ? '#385C4B' : '#8B4049';
+
+      // IBM Carbon "growth" icon
+      const TrendIcon = () => (
+        <svg
+          width="16"
+          height="16"
+          viewBox="0 0 32 32"
+          fill={trendColor}
+          style={{ transform: isPositive ? 'none' : 'rotate(180deg)' }}
+        >
+          <path d="M20,8v2h6.5859L18,18.5859,13.707,14.293a.9994.9994,0,0,0-1.414,0L2,24.5859,3.4141,26,13,16.4141l4.293,4.2929a.9994.9994,0,0,0,1.414,0L28,11.4141V18h2V8Z" />
+        </svg>
+      );
+
+      // IBM Carbon "group" icon
+      const GroupIcon = () => (
+        <svg width="20" height="20" viewBox="0 0 32 32" fill="#4A7561">
+          <path d="M31,30H29V27a3,3,0,0,0-3-3H22a3,3,0,0,0-3,3v3H17V27a5,5,0,0,1,5-5h4a5,5,0,0,1,5,5Z" />
+          <path d="M24,12a3,3,0,1,1-3,3,3,3,0,0,1,3-3m0-2a5,5,0,1,0,5,5A5,5,0,0,0,24,10Z" />
+          <path d="M15,22H13V19a3,3,0,0,0-3-3H6a3,3,0,0,0-3,3v3H1V19a5,5,0,0,1,5-5h4a5,5,0,0,1,5,5Z" />
+          <path d="M8,4A3,3,0,1,1,5,7,3,3,0,0,1,8,4M8,2a5,5,0,1,0,5,5A5,5,0,0,0,8,2Z" />
+        </svg>
+      );
+
+      return (
+        <div className="bg-[#F4F6F0] rounded-xl p-6 border border-[#E8E8E5] flex flex-col h-full min-h-[180px]">
+          <div className="flex items-start justify-between">
+            <h3 className="text-base font-semibold text-[#0B241C] leading-tight pr-4">{title}</h3>
+            {icon || <GroupIcon />}
+          </div>
+          <div className="mt-auto">
+            <p className="text-5xl font-light text-[#0B241C] mb-3" style={{ letterSpacing: '-0.02em' }}>
+              {typeof value === 'number' ? value.toLocaleString() : value}
+            </p>
+            {trend !== undefined && (
+              <div className="flex items-center gap-1.5">
+                <TrendIcon />
+                <span className="text-sm" style={{ color: trendColor }}>
+                  {isPositive ? '+' : ''}{trend}% {trendLabel}
+                </span>
+              </div>
+            )}
+            {description && (
+              <p className="text-sm text-[#4A7561] mt-2">{description}</p>
+            )}
+          </div>
+        </div>
+      );
+    };
+
+    const StatCardShowcase = () => {
+      return (
+        <div className="grid md:grid-cols-2 gap-4">
+          <StatCard
+            title="Total Pageviews Across Digital Platforms"
+            value={766000}
+            trend={12.3}
+          />
+          <StatCard
+            title="Total Views"
+            value={481}
+            trend={-3}
+            description="Total number of page views"
+          />
+        </div>
+      );
+    };
+
+    // TREND LINE CHART
+    const TrendLineChart = () => {
+      const [hovered, setHovered] = useState(null);
+      
+      const data = [
+        { month: 'Jan', newVisitors: 85000, returning: 45000 },
+        { month: 'Feb', newVisitors: 92000, returning: 48000 },
+        { month: 'Mar', newVisitors: 98000, returning: 52000 },
+        { month: 'Apr', newVisitors: 105000, returning: 55000 },
+        { month: 'May', newVisitors: 115000, returning: 58000 },
+        { month: 'Jun', newVisitors: 120000, returning: 60000 },
+      ];
+      
+      const maxValue = 130000;
+      const chartHeight = 200;
+      const chartWidth = 500;
+      
+      const getY = (value) => chartHeight - (value / maxValue) * chartHeight;
+      const getX = (index) => (index / (data.length - 1)) * chartWidth;
+      
+      const newVisitorsPath = data.map((d, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getY(d.newVisitors)}`).join(' ');
+      const returningPath = data.map((d, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getY(d.returning)}`).join(' ');
+      
+      return (
+        <div>
+          <div className="flex items-center gap-8 mb-4">
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-0.5" style={{ backgroundColor: '#11362A' }} />
+              <span className="text-sm text-[#2A4639]">New Visitors</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-0.5" style={{ backgroundColor: '#889A68' }} />
+              <span className="text-sm text-[#2A4639]">Returning Visitors</span>
+            </div>
+          </div>
+          
+          <div className="flex">
+            <div className="flex flex-col justify-between text-xs text-[#4A7561] pr-3 w-16 text-right" style={{ height: `${chartHeight}px` }}>
+              <span>120,000</span><span>90,000</span><span>60,000</span><span>30,000</span><span>0</span>
+            </div>
+            
+            <div className="flex-1 relative" style={{ height: `${chartHeight}px` }}>
+              <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
+                {[0,1,2,3,4].map(i => <div key={i} className="border-t border-dashed border-[#E8E8E5]" />)}
+              </div>
+              
+              <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="w-full h-full overflow-visible">
+                <path d={newVisitorsPath} fill="none" stroke="#11362A" strokeWidth="2" />
+                <path d={returningPath} fill="none" stroke="#889A68" strokeWidth="2" />
+                
+                {data.map((d, i) => (
+                  <g key={i}>
+                    <circle 
+                      cx={getX(i)} cy={getY(d.newVisitors)} r="6" 
+                      fill="white" stroke="#11362A" strokeWidth="2"
+                      className="cursor-pointer"
+                      onMouseEnter={() => setHovered(i)}
+                      onMouseLeave={() => setHovered(null)}
+                    />
+                    <circle 
+                      cx={getX(i)} cy={getY(d.returning)} r="6" 
+                      fill="white" stroke="#889A68" strokeWidth="2"
+                      className="cursor-pointer"
+                      onMouseEnter={() => setHovered(i)}
+                      onMouseLeave={() => setHovered(null)}
+                    />
+                  </g>
+                ))}
+              </svg>
+              
+              {hovered !== null && (
+                <div 
+                  className="absolute bg-white border border-[#E8E8E5] rounded-lg shadow-lg px-4 py-3 pointer-events-none z-20"
+                  style={{ left: `${(hovered / (data.length - 1)) * 100}%`, top: '20%', transform: 'translateX(-50%)' }}
+                >
+                  <p className="text-sm font-medium text-[#0B241C] mb-2">{data[hovered].month}</p>
+                  <p className="text-sm text-[#11362A]">New: {data[hovered].newVisitors.toLocaleString()}</p>
+                  <p className="text-sm text-[#889A68]">Returning: {data[hovered].returning.toLocaleString()}</p>
+                </div>
+              )}
+            </div>
+          </div>
+          
+          <div className="flex ml-16 mt-3">
+            {data.map((d, i) => (
+              <div key={i} className="flex-1 text-center">
+                <span className="text-sm text-[#4A7561]">{d.month}</span>
+              </div>
+            ))}
+          </div>
+          
+          <div className="text-center mt-6">
+            <p className="text-4xl font-light text-[#0B241C]">66% / 34%</p>
+            <p className="text-sm text-[#4A7561] mt-1">New vs Returning Visitors</p>
+          </div>
+        </div>
+      );
+    };
+
+    // HORIZONTAL BAR CHART
+    const HorizontalBarChart = () => {
+      const [hovered, setHovered] = useState(null);
+      
+      const data = [
+        { label: 'Marketing & Advertising', value: 37 },
+        { label: 'Technology', value: 35 },
+        { label: 'Consulting', value: 30 },
+        { label: 'Teaching', value: 19 },
+        { label: 'Accounting', value: 16 },
+        { label: 'Healthcare', value: 15 },
+      ];
+      
+      const maxValue = 40;
+      
+      return (
+        <div className="space-y-3">
+          {data.map((item, i) => (
+            <div 
+              key={i}
+              className="relative cursor-pointer"
+              onMouseEnter={() => setHovered(i)}
+              onMouseLeave={() => setHovered(null)}
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-36 text-right">
+                  <span className="text-sm text-[#0B241C]">{item.label}</span>
+                </div>
+                <div className="flex-1 relative">
+                  <div className="w-full h-8 bg-[#F5F5F3] rounded overflow-hidden">
+                    <div 
+                      className="h-full rounded flex items-center justify-end pr-3 transition-all duration-300"
+                      style={{ 
+                        width: `${(item.value / maxValue) * 100}%`,
+                        backgroundColor: '#889A68',
+                        opacity: hovered !== null && hovered !== i ? 0.4 : 1
+                      }}
+                    >
+                      <span className="text-white text-xs font-semibold px-3 py-1 rounded-full" style={{ backgroundColor: '#434340' }}>
+                        {item.value}%
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <Tooltip visible={hovered === i} position="top">
+                <p className="text-sm font-medium text-[#0B241C]">{item.label}</p>
+                <p className="text-lg font-semibold text-[#11362A]">{item.value}%</p>
+              </Tooltip>
+            </div>
+          ))}
+          
+          <div className="flex items-center gap-4 mt-4">
+            <div className="w-36" />
+            <div className="flex-1 flex justify-between text-xs text-[#4A7561]">
+              <span>0%</span><span>10%</span><span>20%</span><span>30%</span><span>40%</span>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // HORIZONTAL STACKED BAR CHART
+    const HorizontalStackedBarChart = () => {
+      const [hovered, setHovered] = useState(null);
+      
+      const data = [
+        { label: 'Senior leaders understand how gen AI can create value for the business', groupA: 39, groupB: 64 },
+        { label: 'Have an enterprise-wide road map for gen AI, prioritized based on value, feasibility, and risk', groupA: 25, groupB: 59 },
+        { label: 'Have appointed a credible, empowered leader of gen AI initiatives', groupA: 21, groupB: 32 },
+      ];
+      
+      return (
+        <div>
+          <div className="flex items-center gap-6 text-sm mb-6">
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 rounded" style={{ backgroundColor: '#11362A' }} />
+              <span className="text-[#2A4639]">All other respondents</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 rounded" style={{ backgroundColor: '#BDC8AB' }} />
+              <span className="text-[#2A4639]">High performers</span>
+            </div>
+          </div>
+          
+          <div className="space-y-6">
+            {data.map((item, i) => (
+              <div 
+                key={i}
+                className="cursor-pointer"
+                onMouseEnter={() => setHovered(i)}
+                onMouseLeave={() => setHovered(null)}
+              >
+                <p className="text-sm text-[#4A7561] mb-2 max-w-md">{item.label}</p>
+                <div className="relative">
+                  <div 
+                    className="w-full h-10 rounded overflow-hidden flex transition-opacity duration-200"
+                    style={{ 
+                      backgroundColor: '#D6D6D2',
+                      opacity: hovered !== null && hovered !== i ? 0.4 : 1
+                    }}
+                  >
+                    <div 
+                      className="h-full flex items-center justify-end pr-3"
+                      style={{ 
+                        width: `${item.groupA}%`,
+                        backgroundColor: '#11362A'
+                      }}
+                    >
+                      <span className="text-white text-xs font-semibold px-3 py-1 rounded-full" style={{ backgroundColor: '#434340' }}>{item.groupA}</span>
+                    </div>
+                    <div 
+                      className="h-full flex items-center justify-end pr-3"
+                      style={{ 
+                        width: `${item.groupB - item.groupA}%`,
+                        backgroundColor: '#BDC8AB'
+                      }}
+                    >
+                      <span className="text-white text-xs font-semibold px-3 py-1 rounded-full" style={{ backgroundColor: '#434340' }}>{item.groupB}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          <div className="flex justify-between text-xs text-[#4A7561] mt-4">
+            <span>0</span><span>20</span><span>40</span><span>60</span><span>80</span><span>100</span>
+          </div>
+        </div>
+      );
+    };
+
+    // VERTICAL BAR CHART
+    const VerticalBarChart = () => {
+      const [hovered, setHovered] = useState(null);
+      
+      const data = [
+        { month: 'Jan', value: 60 },
+        { month: 'Feb', value: 70 },
+        { month: 'Mar', value: 35 },
+        { month: 'Apr', value: 76 },
+        { month: 'May', value: 82 },
+        { month: 'Jun', value: 68 },
+      ];
+      
+      const maxValue = 100;
+      const chartHeight = 160;
+      
+      return (
+        <div>
+          <div className="flex">
+            <div className="flex flex-col justify-between text-xs text-[#4A7561] pr-3 w-8" style={{ height: `${chartHeight}px` }}>
+              <span>100</span><span>75</span><span>50</span><span>25</span><span>0</span>
+            </div>
+            
+            <div className="flex-1 relative">
+              <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
+                {[0,1,2,3,4].map(i => <div key={i} className="border-t border-dashed border-[#E8E8E5]" />)}
+              </div>
+              
+              <div className="flex items-end gap-5 relative" style={{ height: `${chartHeight}px` }}>
+                {data.map((item, i) => (
+                  <div
+                    key={i}
+                    className="flex-1 flex flex-col items-center relative cursor-pointer"
+                    onMouseEnter={() => setHovered(i)}
+                    onMouseLeave={() => setHovered(null)}
+                  >
+                    <div
+                      className="w-full rounded-t transition-all duration-200"
+                      style={{
+                        height: `${(item.value / maxValue) * chartHeight}px`,
+                        backgroundColor: '#889A68',
+                        opacity: hovered !== null && hovered !== i ? 0.4 : 1
+                      }}
+                    />
+                    <Tooltip visible={hovered === i} position="top">
+                      <p className="text-sm font-medium text-[#0B241C]">{item.month}</p>
+                      <p className="text-lg font-semibold text-[#11362A]">{item.value}</p>
+                    </Tooltip>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex gap-5 ml-8 mt-2">
+            {data.map((item, i) => (
+              <div key={i} className="flex-1 text-center">
+                <span className="text-xs text-[#4A7561]">{item.month}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    };
+
+    // COMPARISON BAR CHART
+    const ComparisonBarChart = () => {
+      const [hovered, setHovered] = useState(null);
+      
+      const data = [
+        { label: 'Info Retrieval', current: 73 },
+        { label: 'Common Tasks', current: 71 },
+        { label: 'LLM Search', current: 47 },
+        { label: 'Code Assist', current: 44 },
+        { label: 'Meeting Summary', current: 26 },
+      ];
+      
+      return (
+        <div>
+          <div className="flex items-center gap-6 text-xs mb-4">
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 rounded" style={{ backgroundColor: '#889A68' }} />
+              <span className="text-[#2A4639]">This Period</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 rounded" style={{ backgroundColor: '#D6D6D2' }} />
+              <span className="text-[#2A4639]">Baseline (100%)</span>
+            </div>
+          </div>
+          
+          <div className="space-y-3">
+            {data.map((item, i) => (
+              <div 
+                key={i}
+                className="relative cursor-pointer"
+                onMouseEnter={() => setHovered(i)}
+                onMouseLeave={() => setHovered(null)}
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-28 text-right">
+                    <span className="text-xs text-[#4A7561]">{item.label}</span>
+                  </div>
+                  <div className="flex-1">
+                    <div 
+                      className="relative h-8 rounded overflow-hidden transition-opacity duration-200"
+                      style={{ 
+                        backgroundColor: '#D6D6D2',
+                        opacity: hovered !== null && hovered !== i ? 0.4 : 1
+                      }}
+                    >
+                      <div 
+                        className="h-full rounded-l flex items-center justify-end pr-3"
+                        style={{ 
+                          width: `${item.current}%`,
+                          backgroundColor: '#889A68'
+                        }}
+                      >
+                        <span className="text-white text-xs font-semibold px-3 py-1 rounded-full" style={{ backgroundColor: '#434340' }}>
+                          {item.current}%
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <Tooltip visible={hovered === i} position="top">
+                  <p className="text-sm font-medium text-[#0B241C] mb-1">{item.label}</p>
+                  <p className="text-sm"><span className="text-[#889A68] font-medium">{item.current}%</span> of baseline</p>
+                </Tooltip>
+              </div>
+            ))}
+          </div>
+          
+          <div className="flex items-center gap-4 mt-4">
+            <div className="w-28" />
+            <div className="flex-1 flex justify-between text-xs text-[#4A7561]">
+              <span>0%</span><span>20%</span><span>40%</span><span>60%</span><span>80%</span><span>100%</span>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // STACKED BAR CHART
+    const StackedBarChart = () => {
+      const [hovered, setHovered] = useState(null);
+      
+      const platforms = [
+        { name: 'Facebook', color: '#6B7D3D' },
+        { name: 'Instagram', color: '#D4847A' },
+        { name: 'LinkedIn', color: '#4A6B8A' },
+        { name: 'Twitter', color: '#B8B4D4' },
+        { name: 'YouTube', color: '#1A3530' },
+      ];
+      
+      const data = [
+        { type: 'Likes', total: 48500, breakdown: { Facebook: 16500, Instagram: 14500, LinkedIn: 5500, Twitter: 6500, YouTube: 5500 } },
+        { type: 'Comments', total: 8900, breakdown: { Facebook: 2400, Instagram: 3200, LinkedIn: 800, Twitter: 1800, YouTube: 700 } },
+        { type: 'Shares', total: 5500, breakdown: { Facebook: 1500, Instagram: 1800, LinkedIn: 700, Twitter: 1000, YouTube: 500 } },
+        { type: 'Saves', total: 4200, breakdown: { Facebook: 1200, Instagram: 1600, LinkedIn: 400, Twitter: 600, YouTube: 400 } },
+      ];
+      
+      const maxTotal = 60000;
+      const chartHeight = 180;
+      
+      return (
+        <div>
+          <div className="flex flex-wrap gap-4 text-xs mb-4">
+            {platforms.map((p, i) => (
+              <div key={i} className="flex items-center gap-1.5">
+                <div className="w-3 h-3 rounded" style={{ backgroundColor: p.color }} />
+                <span className="text-[#2A4639]">{p.name}</span>
+              </div>
+            ))}
+          </div>
+          
+          <div className="flex">
+            <div className="flex flex-col justify-between text-xs text-[#4A7561] pr-3 w-10" style={{ height: `${chartHeight}px` }}>
+              <span>60K</span><span>45K</span><span>30K</span><span>15K</span><span>0</span>
+            </div>
+            
+            <div className="flex-1 relative">
+              <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
+                {[0,1,2,3,4].map(i => <div key={i} className="border-t border-dashed border-[#E8E8E5]" />)}
+              </div>
+              
+              <div className="flex items-end gap-5 relative" style={{ height: `${chartHeight}px` }}>
+                {data.map((item, barIndex) => {
+                  const barHeight = (item.total / maxTotal) * chartHeight;
+                  return (
+                    <div
+                      key={barIndex}
+                      className="flex-1 flex flex-col items-center relative cursor-pointer"
+                      onMouseEnter={() => setHovered(barIndex)}
+                      onMouseLeave={() => setHovered(null)}
+                    >
+                      <div className="w-full relative flex flex-col-reverse rounded-t overflow-hidden" style={{ height: `${barHeight}px` }}>
+                        {platforms.map((platform, segIndex) => {
+                          const segmentValue = item.breakdown[platform.name];
+                          const segmentHeight = (segmentValue / item.total) * 100;
+                          return (
+                            <div
+                              key={segIndex}
+                              style={{
+                                height: `${segmentHeight}%`,
+                                backgroundColor: platform.color,
+                                opacity: hovered !== null && hovered !== barIndex ? 0.4 : 1
+                              }}
+                              className="transition-opacity duration-200"
+                            />
+                          );
+                        })}
+                      </div>
+                      <Tooltip visible={hovered === barIndex} position="top">
+                        <p className="text-sm font-medium text-[#0B241C] mb-2">{item.type}: {item.total.toLocaleString()}</p>
+                        {platforms.map((p, pi) => (
+                          <div key={pi} className="flex items-center gap-2 text-sm leading-relaxed">
+                            <div className="w-2 h-2 rounded" style={{ backgroundColor: p.color }} />
+                            <span className="text-[#2A4639]">{p.name}:</span>
+                            <span className="font-medium text-[#0B241C]">{item.breakdown[p.name].toLocaleString()}</span>
+                          </div>
+                        ))}
+                      </Tooltip>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex gap-5 ml-10 mt-2">
+            {data.map((item, i) => (
+              <div key={i} className="flex-1 text-center">
+                <span className="text-xs text-[#4A7561]">{item.type}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    };
+
+    // DONUT CHART WITH LABELS
+    const DonutChartWithLabels = () => {
+      const [hovered, setHovered] = useState(null);
+      
+      const data = [
+        { name: 'Direct', value: 87500, percent: 35, color: '#B8B4D4' },
+        { name: 'Organic Search', value: 80000, percent: 32, color: '#11362A' },
+        { name: 'Paid Search', value: 45000, percent: 18, color: '#C4B49A' },
+        { name: 'Social Media', value: 30000, percent: 12, color: '#D4847A' },
+        { name: 'Referral', value: 10000, percent: 4, color: '#2D6A6A' },
+        { name: 'Email', value: 5000, percent: 2, color: '#C49A9A' },
+      ];
+      
+      const getPointOnCircle = (percent, offset, radius) => {
+        const angle = ((offset + percent / 2) / 100) * 360 - 90;
+        const rad = angle * Math.PI / 180;
+        return {
+          x: 150 + radius * Math.cos(rad),
+          y: 150 + radius * Math.sin(rad)
+        };
+      };
+
+      let cumulativePercent = 0;
+      const segments = data.map(d => {
+        const segment = { ...d, offset: cumulativePercent };
+        cumulativePercent += d.percent;
+        return segment;
+      });
+
+      return (
+        <div>
+          <div className="flex items-start gap-8">
+            <div className="relative flex-1">
+              <svg viewBox="0 0 300 300" className="w-full max-w-md">
+                {segments.map((segment, i) => {
+                  const circumference = 2 * Math.PI * 70;
+                  const strokeDash = (segment.percent / 100) * circumference;
+                  const strokeOffset = -(segment.offset / 100) * circumference;
+                  const labelPoint = getPointOnCircle(segment.percent, segment.offset, 120);
+                  const isLeft = labelPoint.x < 150;
+                  
+                  return (
+                    <g key={i}>
+                      <circle 
+                        cx="150" cy="150" r="70" 
+                        fill="none" 
+                        stroke={segment.color} 
+                        strokeWidth="35"
+                        strokeDasharray={`${strokeDash} ${circumference}`} 
+                        strokeDashoffset={strokeOffset}
+                        transform="rotate(-90 150 150)" 
+                        opacity={hovered !== null && hovered !== i ? 0.4 : 1}
+                        className="transition-opacity duration-200 cursor-pointer"
+                        onMouseEnter={() => setHovered(i)} 
+                        onMouseLeave={() => setHovered(null)} 
+                      />
+                      <text 
+                        x={labelPoint.x} 
+                        y={labelPoint.y - 6}
+                        textAnchor={isLeft ? 'end' : 'start'}
+                        fill="#0B241C"
+                        fontSize="11"
+                        fontWeight="500"
+                      >
+                        {segment.name}:
+                      </text>
+                      <text 
+                        x={labelPoint.x} 
+                        y={labelPoint.y + 8}
+                        textAnchor={isLeft ? 'end' : 'start'}
+                        fill="#4A7561"
+                        fontSize="10"
+                      >
+                        {segment.percent}%
+                      </text>
+                    </g>
+                  );
+                })}
+              </svg>
+            </div>
+          </div>
+          
+          <div className="mt-6 border border-[#E8E8E5] rounded-lg overflow-hidden">
+            {data.map((item, i) => (
+              <div 
+                key={i}
+                className={`flex items-center justify-between px-4 py-3 cursor-pointer transition-colors ${
+                  hovered === i ? 'bg-[#F5F5F3]' : i % 2 === 0 ? 'bg-white' : 'bg-[#FAFAF9]'
+                } ${i !== data.length - 1 ? 'border-b border-[#E8E8E5]' : ''}`}
+                onMouseEnter={() => setHovered(i)}
+                onMouseLeave={() => setHovered(null)}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
+                  <span className="text-sm text-[#0B241C]">{item.name}</span>
+                </div>
+                <div className="flex items-center gap-8">
+                  <span className="text-sm font-medium text-[#0B241C] w-12 text-right">{item.percent}%</span>
+                  <span className="text-sm text-[#385C4B] w-16 text-right">+{(Math.random() * 20 + 5).toFixed(1)}%</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    };
+
+    // TREEMAP
+    const Treemap = () => {
+      const [hovered, setHovered] = useState(null);
+      
+      const data = [
+        { name: 'Technology & Development', percent: 26.1, color: '#4A6B8A', size: 'large' },
+        { name: 'Education & Research', percent: 10.7, color: '#6B7D3D', size: 'medium' },
+        { name: 'Arts & Entertainment', percent: 9.1, color: '#B8B4D4', size: 'medium' },
+        { name: 'Life Sciences', percent: 7.9, color: '#1A3530', size: 'small' },
+        { name: 'Business & Finance', percent: 7.4, color: '#D4847A', size: 'small' },
+        { name: 'Healthcare', percent: 2.8, color: '#C4B49A', size: 'tiny' },
+        { name: 'Community', percent: 2.6, color: '#889A68', size: 'tiny' },
+      ];
+      
+      return (
+        <div className="bg-[#F5F5F3] rounded-xl p-4 border border-[#E8E8E5]">
+          <div className="flex h-64 gap-1">
+            <div className="flex-[3] flex flex-col gap-1">
+              <div 
+                className={`flex-[2] rounded-lg p-4 flex flex-col justify-between cursor-pointer transition-opacity ${hovered !== null && hovered !== 0 ? 'opacity-40' : ''}`}
+                style={{ backgroundColor: data[0].color }}
+                onMouseEnter={() => setHovered(0)}
+                onMouseLeave={() => setHovered(null)}
+              >
+                <p className="text-white text-sm font-medium">{data[0].name}</p>
+                <p className="text-white/70 text-sm">{data[0].percent}%</p>
+              </div>
+              <div className="flex-1 flex gap-1">
+                <div 
+                  className={`flex-1 rounded-lg p-3 flex flex-col justify-between cursor-pointer transition-opacity ${hovered !== null && hovered !== 4 ? 'opacity-40' : ''}`}
+                  style={{ backgroundColor: data[4].color }}
+                  onMouseEnter={() => setHovered(4)}
+                  onMouseLeave={() => setHovered(null)}
+                >
+                  <p className="text-white text-xs font-medium">{data[4].name}</p>
+                  <p className="text-white/70 text-xs">{data[4].percent}%</p>
+                </div>
+                <div 
+                  className={`flex-1 rounded-lg p-3 flex flex-col justify-between cursor-pointer transition-opacity ${hovered !== null && hovered !== 3 ? 'opacity-40' : ''}`}
+                  style={{ backgroundColor: data[3].color }}
+                  onMouseEnter={() => setHovered(3)}
+                  onMouseLeave={() => setHovered(null)}
+                >
+                  <p className="text-white text-xs font-medium">{data[3].name}</p>
+                  <p className="text-white/70 text-xs">{data[3].percent}%</p>
+                </div>
+              </div>
+            </div>
+            <div className="flex-[2] flex flex-col gap-1">
+              <div 
+                className={`flex-[1.5] rounded-lg p-3 flex flex-col justify-between cursor-pointer transition-opacity ${hovered !== null && hovered !== 1 ? 'opacity-40' : ''}`}
+                style={{ backgroundColor: data[1].color }}
+                onMouseEnter={() => setHovered(1)}
+                onMouseLeave={() => setHovered(null)}
+              >
+                <p className="text-white text-sm font-medium">{data[1].name}</p>
+                <p className="text-white/70 text-sm">{data[1].percent}%</p>
+              </div>
+              <div 
+                className={`flex-1 rounded-lg p-3 flex flex-col justify-between cursor-pointer transition-opacity ${hovered !== null && hovered !== 2 ? 'opacity-40' : ''}`}
+                style={{ backgroundColor: data[2].color }}
+                onMouseEnter={() => setHovered(2)}
+                onMouseLeave={() => setHovered(null)}
+              >
+                <p className="text-[#0B241C] text-sm font-medium">{data[2].name}</p>
+                <p className="text-[#2A4639] text-sm">{data[2].percent}%</p>
+              </div>
+              <div className="flex-1 flex gap-1">
+                <div 
+                  className={`flex-1 rounded-lg p-2 flex flex-col justify-between cursor-pointer transition-opacity ${hovered !== null && hovered !== 6 ? 'opacity-40' : ''}`}
+                  style={{ backgroundColor: data[6].color }}
+                  onMouseEnter={() => setHovered(6)}
+                  onMouseLeave={() => setHovered(null)}
+                >
+                  <p className="text-white text-xs font-medium">{data[6].name}</p>
+                  <p className="text-white/70 text-xs">{data[6].percent}%</p>
+                </div>
+                <div 
+                  className={`flex-1 rounded-lg p-2 flex flex-col justify-between cursor-pointer transition-opacity ${hovered !== null && hovered !== 5 ? 'opacity-40' : ''}`}
+                  style={{ backgroundColor: data[5].color }}
+                  onMouseEnter={() => setHovered(5)}
+                  onMouseLeave={() => setHovered(null)}
+                >
+                  <p className="text-[#0B241C] text-xs font-medium">{data[5].name}</p>
+                  <p className="text-[#2A4639] text-xs">{data[5].percent}%</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // INDEX SCALE
+    const IndexScale = () => {
+      const colors = [
+        '#E8EEEB', '#D0DDD5', '#B8CCBF', '#9EBAA9', 
+        '#84A893', '#6A967D', '#508467', '#3D7253', '#2A6040', '#11362A'
+      ];
+      
+      return (
+        <div>
+          <div className="flex h-10 rounded-lg overflow-hidden">
+            {colors.map((color, i) => (
+              <div key={i} className="flex-1" style={{ backgroundColor: color }} />
+            ))}
+          </div>
+          <div className="flex justify-between text-xs text-[#4A7561] mt-3">
+            <span>Emerging (bottom 25%)</span>
+            <span>Lower middle</span>
+            <span>Upper middle</span>
+            <span>Leading (top 25%)</span>
+          </div>
+        </div>
+      );
+    };
+
+    // WAFFLE CHART
+    const WaffleChart = () => {
+      // Colors from design system: Sidra Green, Sage, Neutral
+      const colors = {
+        automated: '#11362A',  // Sidra Green 800
+        augmented: '#889A68',  // Sage 500
+        manual: '#D6D6D2',     // Neutral 300
+      };
+
+      const occupations = [
+        {
+          title: 'Software Developers, Applications',
+          category: 'Computer and Mathematical',
+          usage: 5.20,
+          cols: 6,
+          rows: 3,
+          cells: [
+            colors.automated, colors.augmented, colors.manual, colors.manual, colors.augmented, colors.manual,
+            colors.automated, colors.augmented, colors.manual, colors.augmented, colors.manual, colors.manual,
+            colors.automated, colors.augmented, colors.augmented, colors.manual, colors.manual, colors.manual,
+          ]
+        },
+        {
+          title: 'Data Warehousing Specialists',
+          category: 'Computer and Mathematical',
+          usage: 5.06,
+          cols: 3,
+          rows: 3,
+          cells: [
+            colors.automated, colors.augmented, colors.manual,
+            colors.automated, colors.augmented, colors.manual,
+            colors.augmented, colors.manual, colors.manual,
+          ]
+        },
+        {
+          title: 'Software Developers, Systems Software',
+          category: 'Computer and Mathematical',
+          usage: 3.05,
+          cols: 8,
+          rows: 3,
+          cells: [
+            colors.automated, colors.augmented, colors.manual, colors.augmented, colors.manual, colors.manual, colors.augmented, colors.manual,
+            colors.automated, colors.augmented, colors.augmented, colors.manual, colors.manual, colors.augmented, colors.manual, colors.manual,
+            colors.automated, colors.augmented, colors.manual, colors.augmented, colors.manual, colors.manual, colors.manual, colors.manual,
+          ]
+        },
+        {
+          title: 'Computer Systems Analysts',
+          category: 'Computer and Mathematical',
+          usage: 2.66,
+          cols: 4,
+          rows: 3,
+          cells: [
+            colors.automated, colors.augmented, colors.manual, colors.manual,
+            colors.automated, colors.augmented, colors.augmented, colors.manual,
+            colors.automated, colors.augmented, colors.manual, colors.manual,
+          ]
+        },
+        {
+          title: 'Database Administrators',
+          category: 'Computer and Mathematical',
+          usage: 4.12,
+          cols: 5,
+          rows: 3,
+          cells: [
+            colors.automated, colors.automated, colors.augmented, colors.manual, colors.manual,
+            colors.automated, colors.augmented, colors.augmented, colors.manual, colors.manual,
+            colors.augmented, colors.augmented, colors.manual, colors.manual, colors.manual,
+          ]
+        },
+        {
+          title: 'Network Architects',
+          category: 'Computer and Mathematical',
+          usage: 2.89,
+          cols: 4,
+          rows: 4,
+          cells: [
+            colors.automated, colors.augmented, colors.manual, colors.manual,
+            colors.automated, colors.manual, colors.augmented, colors.manual,
+            colors.augmented, colors.augmented, colors.manual, colors.manual,
+            colors.augmented, colors.manual, colors.manual, colors.manual,
+          ]
+        },
+      ];
+
+      const MiniWaffle = ({ occupation }) => {
+        const cellSize = 24;
+        const gap = 2;
+
+        return (
+          <div className="space-y-2">
+            <div>
+              <h4 className="text-base font-medium text-[#0B241C] leading-tight">{occupation.title}</h4>
+              <p className="text-sm text-[#4A7561] mt-0.5">{occupation.category}</p>
+            </div>
+            <div
+              className="grid"
+              style={{
+                gridTemplateColumns: `repeat(${occupation.cols}, ${cellSize}px)`,
+                gap: `${gap}px`,
+              }}
+            >
+              {occupation.cells.map((color, i) => (
+                <div
+                  key={i}
+                  className="rounded-sm"
+                  style={{ backgroundColor: color, width: `${cellSize}px`, height: `${cellSize}px` }}
+                />
+              ))}
+            </div>
+            <p className="text-sm text-[#4A7561]">{occupation.usage.toFixed(2)}% usage</p>
+          </div>
+        );
+      };
+
+      return (
+        <div className="space-y-6">
+          <div className="grid grid-cols-2 gap-x-16 gap-y-8">
+            {occupations.map((occupation, i) => (
+              <MiniWaffle key={i} occupation={occupation} />
+            ))}
+          </div>
+          <div className="flex gap-6 text-xs pt-4 border-t border-[#E8E8E5]">
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: colors.automated }} />
+              <span className="text-[#2A4639]">Automated</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: colors.augmented }} />
+              <span className="text-[#2A4639]">Augmented</span>
+            </div>
+            <div className="flex items-center gap-1.5">
+              <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: colors.manual }} />
+              <span className="text-[#2A4639]">Manual</span>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // BUBBLE CHART
+    const BubbleChart = () => {
+      const [hovered, setHovered] = useState(null);
+
+      // Scale factor of 1.15 (15% larger)
+      const scaleFactor = 1.15;
+
+      const data = [
+        { name: 'Aerospace', value: 147, size: 180 * scaleFactor, x: 280, y: 230, color: '#B8B4D4' },
+        { name: 'Cleantech', value: 91, size: 130 * scaleFactor, x: 180, y: 100, color: '#6B7D3D' },
+        { name: 'Security', value: 91, size: 120 * scaleFactor, x: 100, y: 260, color: '#D4847A' },
+        { name: 'Home Services', value: 54, size: 80 * scaleFactor, x: 370, y: 85, color: '#1A3530' },
+        { name: 'Food & Beverage', value: 51, size: 75 * scaleFactor, x: 70, y: 130, color: '#4A6B8A' },
+        { name: 'Crypto', value: 36, size: 60 * scaleFactor, x: 160, y: 200, color: '#C4B49A' },
+      ];
+
+      // Helper to wrap text into multiple lines based on available width
+      const wrapText = (text, maxWidth) => {
+        const words = text.split(' ');
+        if (words.length === 1) return [text];
+
+        const lines = [];
+        let currentLine = '';
+
+        words.forEach(word => {
+          const testLine = currentLine ? `${currentLine} ${word}` : word;
+          // Approximate character width (adjust based on font)
+          const testWidth = testLine.length * 6;
+
+          if (testWidth > maxWidth && currentLine) {
+            lines.push(currentLine);
+            currentLine = word;
+          } else {
+            currentLine = testLine;
+          }
+        });
+
+        if (currentLine) lines.push(currentLine);
+        return lines;
+      };
+
+      // Calculate font size based on circle size
+      const getFontSize = (size, isValue = false) => {
+        const radius = size / 2;
+        if (isValue) {
+          return Math.max(9, Math.min(14, radius * 0.16));
+        }
+        return Math.max(9, Math.min(14, radius * 0.18));
+      };
+
+      return (
+        <div className="relative" style={{ height: '400px' }}>
+          <svg viewBox="0 0 470 400" className="w-full h-full">
+            {data.map((item, i) => {
+              const radius = item.size / 2;
+              const maxTextWidth = radius * 1.4; // Allow text to use ~70% of diameter
+              const nameLines = wrapText(item.name, maxTextWidth);
+              const nameFontSize = getFontSize(item.size);
+              const valueFontSize = getFontSize(item.size, true);
+              const lineHeight = nameFontSize * 1.2;
+              const totalTextHeight = (nameLines.length * lineHeight) + valueFontSize + 4;
+              const startY = item.y - (totalTextHeight / 2) + (nameFontSize / 2);
+
+              return (
+                <g
+                  key={i}
+                  onMouseEnter={() => setHovered(i)}
+                  onMouseLeave={() => setHovered(null)}
+                  className="cursor-pointer"
+                >
+                  <circle
+                    cx={item.x}
+                    cy={item.y}
+                    r={radius}
+                    fill={item.color}
+                    opacity={hovered !== null && hovered !== i ? 0.4 : 1}
+                    className="transition-opacity duration-200"
+                  />
+                  {nameLines.map((line, lineIndex) => (
+                    <text
+                      key={lineIndex}
+                      x={item.x}
+                      y={startY + (lineIndex * lineHeight)}
+                      textAnchor="middle"
+                      fill={['#B8B4D4', '#C4B49A'].includes(item.color) ? '#0B241C' : '#FFFFFF'}
+                      fontSize={nameFontSize}
+                      fontWeight="500"
+                    >
+                      {line}
+                    </text>
+                  ))}
+                  <text
+                    x={item.x}
+                    y={startY + (nameLines.length * lineHeight) + 4}
+                    textAnchor="middle"
+                    fill={['#B8B4D4', '#C4B49A'].includes(item.color) ? '#2A4639' : 'rgba(255,255,255,0.8)'}
+                    fontSize={valueFontSize}
+                  >
+                    +{item.value}%
+                  </text>
+                </g>
+              );
+            })}
+          </svg>
+          
+          {hovered !== null && (
+            <div className="absolute top-4 right-4 bg-white border border-[#E8E8E5] rounded-lg shadow-lg px-4 py-3">
+              <div className="flex items-center gap-2 mb-1">
+                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: data[hovered].color }} />
+                <p className="text-sm font-medium text-[#0B241C]">{data[hovered].name}</p>
+              </div>
+              <p className="text-lg font-semibold text-[#11362A]">+{data[hovered].value}%</p>
+              <p className="text-xs text-[#4A7561]">Growth rate</p>
+            </div>
+          )}
+        </div>
+      );
+    };
+
+    // POST CARD
+    const PostCard = ({
+      image = 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=600&q=80',
+      platform = 'instagram',
+      badge = 'Video',
+      title = 'Student Life at Education City',
+      likes = '3.2K',
+      comments = '234',
+      shares = '89'
+    }) => {
+      // IBM Carbon logo icons
+      const platforms = {
+        instagram: (
+          <svg width="16" height="16" viewBox="0 0 32 32" fill="white">
+            <path d="M16,3.9c3.2,0,3.6,0,4.9,0.1c1.2,0.1,1.8,0.2,2.3,0.4c0.6,0.2,1,0.5,1.4,0.9c0.4,0.4,0.7,0.9,0.9,1.4
+              c0.2,0.5,0.4,1.1,0.4,2.3c0.1,1.3,0.1,1.6,0.1,4.9s0,3.6-0.1,4.9c-0.1,1.2-0.2,1.8-0.4,2.3c-0.2,0.6-0.5,1-0.9,1.4
+              c-0.4,0.4-0.9,0.7-1.4,0.9c-0.5,0.2-1.1,0.4-2.3,0.4c-1.3,0.1-1.6,0.1-4.9,0.1s-3.6,0-4.9-0.1c-1.2-0.1-1.8-0.2-2.3-0.4
+              c-0.6-0.2-1-0.5-1.4-0.9c-0.4-0.4-0.7-0.9-0.9-1.4c-0.2-0.5-0.4-1.1-0.4-2.3c-0.1-1.3-0.1-1.6-0.1-4.9s0-3.6,0.1-4.9
+              c0.1-1.2,0.2-1.8,0.4-2.3c0.2-0.6,0.5-1,0.9-1.4c0.4-0.4,0.9-0.7,1.4-0.9c0.5-0.2,1.1-0.4,2.3-0.4C12.4,3.9,12.8,3.9,16,3.9
+              M16,2c-3.3,0-3.7,0-4.9,0.1c-1.3,0.1-2.2,0.2-2.9,0.5c-0.8,0.3-1.5,0.7-2.2,1.4C5.3,4.6,4.8,5.3,4.5,6.1
+              C4.3,6.9,4.1,7.7,4,9.1C4,10.3,4,10.7,4,14s0,3.7,0.1,4.9c0.1,1.3,0.2,2.2,0.5,2.9c0.3,0.8,0.7,1.5,1.4,2.2
+              c0.7,0.7,1.4,1.1,2.2,1.4c0.8,0.3,1.6,0.5,2.9,0.5c1.3,0.1,1.6,0.1,4.9,0.1s3.7,0,4.9-0.1c1.3-0.1,2.2-0.2,2.9-0.5
+              c0.8-0.3,1.5-0.7,2.2-1.4c0.7-0.7,1.1-1.4,1.4-2.2c0.3-0.8,0.5-1.6,0.5-2.9c0.1-1.3,0.1-1.6,0.1-4.9s0-3.7-0.1-4.9
+              c-0.1-1.3-0.2-2.2-0.5-2.9c-0.3-0.8-0.7-1.5-1.4-2.2c-0.7-0.7-1.4-1.1-2.2-1.4c-0.8-0.3-1.6-0.5-2.9-0.5C19.7,2,19.3,2,16,2
+              L16,2z"/>
+            <path d="M16,7.8c-3.4,0-6.2,2.8-6.2,6.2s2.8,6.2,6.2,6.2s6.2-2.8,6.2-6.2S19.4,7.8,16,7.8z M16,18c-2.2,0-4-1.8-4-4
+              s1.8-4,4-4s4,1.8,4,4S18.2,18,16,18z"/>
+            <circle cx="22.4" cy="7.6" r="1.4"/>
+          </svg>
+        ),
+        facebook: (
+          <svg width="16" height="16" viewBox="0 0 32 32" fill="white">
+            <path d="M26.7,4H5.3C4.6,4,4,4.6,4,5.3v21.3C4,27.4,4.6,28,5.3,28h11.5v-9.3h-3.1v-3.6h3.1v-2.7c0-3.1,1.9-4.8,4.7-4.8
+              c1.3,0,2.5,0.1,2.8,0.1v3.2h-1.9c-1.5,0-1.8,0.7-1.8,1.8v2.3h3.6l-0.5,3.6h-3.1V28h6.1c0.7,0,1.3-0.6,1.3-1.3V5.3
+              C28,4.6,27.4,4,26.7,4z"/>
+          </svg>
+        ),
+        twitter: (
+          <svg width="16" height="16" viewBox="0 0 32 32" fill="white">
+            <path d="M18.4,14.3L27.5,4h-2.2l-7.9,9l-6.3-9H4l9.5,13.6L4,28h2.2l8.3-9.5l6.6,9.5H28L18.4,14.3z M15.2,17.1l-1-1.4L6.8,5.6h3.3
+              l6.2,8.8l1,1.4l8.1,11.5h-3.3L15.2,17.1z"/>
+          </svg>
+        ),
+        linkedin: (
+          <svg width="16" height="16" viewBox="0 0 32 32" fill="white">
+            <path d="M26.2,4H5.8C4.8,4,4,4.8,4,5.7v20.5c0,0.9,0.8,1.7,1.8,1.7h20.4c1,0,1.8-0.8,1.8-1.7V5.7C28,4.8,27.2,4,26.2,4z M11.1,24.4
+              H7.6V13h3.5V24.4z M9.4,11.4c-1.1,0-2.1-0.9-2.1-2.1c0-1.2,0.9-2.1,2.1-2.1c1.1,0,2.1,0.9,2.1,2.1C11.4,10.5,10.5,11.4,9.4,11.4z
+              M24.5,24.4H21v-5.6c0-1.3,0-3-1.9-3c-1.9,0-2.1,1.5-2.1,2.9v5.7h-3.5V13h3.3v1.6h0c0.5-0.9,1.6-1.9,3.4-1.9c3.6,0,4.3,2.4,4.3,5.5
+              V24.4z"/>
+          </svg>
+        ),
+        youtube: (
+          <svg width="16" height="16" viewBox="0 0 32 32" fill="white">
+            <path d="M29.4,10.2c-0.3-1.2-1.2-2.1-2.4-2.4C24.8,7,16,7,16,7s-8.8,0-11,0.8c-1.2,0.3-2.1,1.2-2.4,2.4C2,12.4,2,16,2,16
+              s0,3.6,0.6,5.8c0.3,1.2,1.2,2.1,2.4,2.4C7.2,25,16,25,16,25s8.8,0,11-0.8c1.2-0.3,2.1-1.2,2.4-2.4C30,19.6,30,16,30,16
+              S30,12.4,29.4,10.2z M13,20V12l7.3,4L13,20z"/>
+          </svg>
+        ),
+      };
+
+      // IBM Carbon icons for engagement metrics
+      const HeartIcon = () => (
+        <svg width="12" height="12" viewBox="0 0 32 32" fill="white">
+          <path d="M22.5,4c-2,0-3.9,0.8-5.3,2.2L16,7.4l-1.1-1.1C12,3.4,7.4,3.4,4.5,6.3c-2.9,2.9-2.9,7.6,0,10.5l10.4,10.4
+            c0.6,0.6,1.5,0.6,2.1,0l10.4-10.4c2.9-2.9,2.9-7.6,0-10.5C25.9,4.8,24.1,4,22.5,4z"/>
+        </svg>
+      );
+
+      const CommentIcon = () => (
+        <svg width="12" height="12" viewBox="0 0 32 32" fill="white">
+          <path d="M17.7,30L16,28.3c-0.4-0.4-0.4-1,0-1.4l1.7-1.7c0.2-0.2,0.4-0.3,0.7-0.3H28V4H4v21h10c0.6,0,1,0.4,1,1v2l2.7-2.7V30z
+            M4,2h24c1.1,0,2,0.9,2,2v21c0,1.1-0.9,2-2,2H18.8L13,32.8V27H4c-1.1,0-2-0.9-2-2V4C2,2.9,2.9,2,4,2z"/>
+        </svg>
+      );
+
+      const ShareIcon = () => (
+        <svg width="12" height="12" viewBox="0 0 32 32" fill="white">
+          <path d="M23,20a5,5,0,0,0-3.89,1.89l-7.31-4.57a4.46,4.46,0,0,0,0-2.64l7.31-4.57A5,5,0,1,0,18,7a4.79,4.79,0,0,0,.2,1.32l-7.31,4.57A5,5,0,1,0,11,20a4.79,4.79,0,0,0-.2-1.32l7.31-4.57A5,5,0,1,0,23,20Z"/>
+        </svg>
+      );
+
+      return (
+        <div
+          className="relative rounded-xl overflow-hidden h-60 w-full max-w-lg flex flex-col justify-end p-4"
+          style={{
+            backgroundImage: `url(${image})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          }}
+        >
+          {/* Gradient overlay */}
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background: 'linear-gradient(to top, rgba(0,0,0,0.6) 0%, rgba(0,0,0,0) 50%)',
+            }}
+          />
+
+          {/* Content */}
+          <div className="relative z-10 flex flex-col gap-2">
+            {/* Platform icon and badge */}
+            <div className="flex items-center gap-2">
+              {platforms[platform]}
+              <span
+                className="text-white text-xs font-medium px-2 py-0.5 rounded-md"
+                style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}
+              >
+                {badge}
+              </span>
+            </div>
+
+            {/* Title */}
+            <p className="text-white text-sm font-normal">{title}</p>
+
+            {/* Engagement metrics */}
+            <div className="flex items-center gap-4 text-white/80 text-xs">
+              <span className="flex items-center gap-1">
+                <HeartIcon />
+                {likes}
+              </span>
+              <span className="flex items-center gap-1">
+                <CommentIcon />
+                {comments}
+              </span>
+              <span className="flex items-center gap-1">
+                <ShareIcon />
+                {shares}
+              </span>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    const PostShowcase = () => {
+      return (
+        <div className="grid md:grid-cols-2 gap-6">
+          <PostCard
+            image="https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=600&q=80"
+            platform="instagram"
+            badge="Video"
+            title="Student Life at Education City"
+            likes="3.2K"
+            comments="234"
+            shares="89"
+          />
+          <PostCard
+            image="https://images.unsplash.com/photo-1606761568499-6d2451b23c66?w=600&q=80"
+            platform="facebook"
+            badge="Photo"
+            title="QF Innovation Summit 2024"
+            likes="1.8K"
+            comments="156"
+            shares="42"
+          />
+          <PostCard
+            image="https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=600&q=80"
+            platform="linkedin"
+            badge="Article"
+            title="Research Excellence Awards Ceremony"
+            likes="892"
+            comments="78"
+            shares="124"
+          />
+          <PostCard
+            image="https://images.unsplash.com/photo-1492538368677-f6e0afe31dcc?w=600&q=80"
+            platform="youtube"
+            badge="Video"
+            title="Behind the Scenes: World Cup Legacy"
+            likes="5.4K"
+            comments="412"
+            shares="267"
+          />
+        </div>
+      );
+    };
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // MAIN COMPONENT
+    // ─────────────────────────────────────────────────────────────────────────────
+
+    function QFDesignSystem() {
+      const primaryColors = [
+        { name: '50', hex: '#F2F5F4' },
+        { name: '100', hex: '#E0E7E4' },
+        { name: '200', hex: '#C1CFC9' },
+        { name: '300', hex: '#9AB3A9' },
+        { name: '400', hex: '#6E9484' },
+        { name: '500', hex: '#4A7561' },
+        { name: '600', hex: '#385C4B' },
+        { name: '700', hex: '#2A4639' },
+        { name: '800', hex: '#11362A' },
+        { name: '900', hex: '#0B241C' },
+      ];
+
+      const sageColors = [
+        { name: '50', hex: '#F4F6F0' },
+        { name: '100', hex: '#E8ECDF' },
+        { name: '200', hex: '#D5DCCA' },
+        { name: '300', hex: '#BDC8AB' },
+        { name: '400', hex: '#A3B288' },
+        { name: '500', hex: '#889A68' },
+        { name: '600', hex: '#6B7A50' },
+        { name: '700', hex: '#525D3E' },
+        { name: '800', hex: '#3A422C' },
+        { name: '900', hex: '#24291B' },
+      ];
+
+      const neutralColors = [
+        { name: '50', hex: '#FAFAF9' },
+        { name: '100', hex: '#F5F5F3' },
+        { name: '200', hex: '#E8E8E5' },
+        { name: '300', hex: '#D6D6D2' },
+        { name: '400', hex: '#A8A8A3' },
+        { name: '500', hex: '#737370' },
+        { name: '600', hex: '#5C5C59' },
+        { name: '700', hex: '#434340' },
+        { name: '800', hex: '#2B2B29' },
+        { name: '900', hex: '#1A1A18' },
+      ];
+
+      const categoricalColors = [
+        { name: 'Olive', hex: '#6B7D3D' },
+        { name: 'Lavender', hex: '#B8B4D4' },
+        { name: 'Coral', hex: '#D4847A' },
+        { name: 'Steel', hex: '#4A6B8A' },
+        { name: 'Sand', hex: '#C4B49A' },
+        { name: 'Forest', hex: '#1A3530' },
+        { name: 'Teal', hex: '#2D6A6A' },
+        { name: 'Rose', hex: '#C49A9A' },
+      ];
+
+      const semanticColors = [
+        { name: 'Success', hex: '#385C4B' },
+        { name: 'Warning', hex: '#A3824A' },
+        { name: 'Error', hex: '#8B4049' },
+        { name: 'Info', hex: '#4A6B7C' },
+      ];
+
+      return (
+        <div className="min-h-screen bg-[#F5F5F3]" style={{ fontFamily: "system-ui, -apple-system, sans-serif" }}>
+          {/* Sidebar Navigation */}
+          <Sidebar />
+
+          {/* Main content area - offset for fixed sidebar */}
+          <div className="ml-56">
+            {/* Header */}
+            <div className="bg-[#11362A] text-white px-8 py-6">
+              <div className="max-w-4xl">
+                <h1 className="text-2xl font-semibold">QF Design System</h1>
+                <p className="text-white/60 text-sm mt-1">Communications Dashboard — Color & Chart Reference v2.1</p>
+              </div>
+            </div>
+
+            <div className="max-w-4xl p-8">
+
+            {/* COLOR PALETTES */}
+            <div id="colors" className="mb-8 scroll-mt-6">
+              <h2 className="text-xl font-semibold text-[#0B241C]">Color Palettes</h2>
+              <p className="text-sm text-[#4A7561] mt-1">Click any swatch to copy hex value.</p>
+            </div>
+
+            <SectionCard
+              id="sidra-green"
+              title="Primary — Sidra Green"
+              description="Brand color (Qatar Foundation) with 800 as the primary value. Use for buttons, navigation, icons, and key interactive elements."
+            >
+              <div className="grid grid-cols-5 md:grid-cols-10 gap-2 mb-6">
+                {primaryColors.map((c, i) => (
+                  <ColorSwatch key={i} color={c.hex} name={c.name} hex={c.hex} size="default" />
+                ))}
+              </div>
+              <div className="flex flex-wrap gap-3 pt-4 border-t border-[#E8E8E5]">
+                <button className="px-4 py-2 rounded-lg text-white text-sm font-medium" style={{ backgroundColor: '#11362A' }}>
+                  Primary Button
+                </button>
+                <button className="px-4 py-2 rounded-lg text-sm font-medium border-2" style={{ borderColor: '#11362A', color: '#11362A' }}>
+                  Secondary
+                </button>
+                <button className="px-4 py-2 rounded-lg text-sm font-medium" style={{ backgroundColor: '#E0E7E4', color: '#11362A' }}>
+                  Tertiary
+                </button>
+                <span className="px-3 py-2 rounded-lg text-white text-sm font-medium inline-flex items-center gap-2" style={{ backgroundColor: '#11362A' }}>
+                  <span className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-xs">3</span>
+                  Badge
+                </span>
+              </div>
+            </SectionCard>
+
+            <SectionCard
+              id="sage"
+              title="Secondary — Sage"
+              description="Used for data visualization, status indicators, heatmaps, and secondary UI elements."
+            >
+              <div className="grid grid-cols-5 md:grid-cols-10 gap-2">
+                {sageColors.map((c, i) => (
+                  <ColorSwatch key={i} color={c.hex} name={c.name} hex={c.hex} size="default" />
+                ))}
+              </div>
+            </SectionCard>
+
+            <SectionCard
+              id="neutrals"
+              title="Neutrals — Warm Gray"
+              description="Warm-tinted neutrals for text, borders, and backgrounds. Harmonizes with the green palette."
+            >
+              <div className="grid grid-cols-5 md:grid-cols-10 gap-2">
+                {neutralColors.map((c, i) => (
+                  <ColorSwatch key={i} color={c.hex} name={c.name} hex={c.hex} size="default" />
+                ))}
+              </div>
+            </SectionCard>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <SectionCard id="categorical" title="Tertiary — Categorical" description="Use only when 5+ distinct categories needed">
+                <div className="grid grid-cols-4 gap-2">
+                  {categoricalColors.map((c, i) => (
+                    <ColorSwatch key={i} color={c.hex} name={c.name} hex={c.hex} size="small" />
+                  ))}
+                </div>
+              </SectionCard>
+
+              <SectionCard id="semantic" title="Semantic" description="Status indicators, alerts">
+                <div className="grid grid-cols-4 gap-2">
+                  {semanticColors.map((c, i) => (
+                    <ColorSwatch key={i} color={c.hex} name={c.name} hex={c.hex} size="small" />
+                  ))}
+                </div>
+              </SectionCard>
+            </div>
+
+            {/* CHART TYPES */}
+
+            <div id="charts" className="mt-16 mb-8 pt-8 border-t border-[#E8E8E5] scroll-mt-6">
+              <h2 className="text-xl font-semibold text-[#0B241C]">Chart Types Reference</h2>
+              <p className="text-sm text-[#4A7561] mt-1">Interactive examples. Hover for tooltips.</p>
+            </div>
+
+            <SectionCard
+              id="stat-card"
+              title="Stat Card"
+              description="Display key metrics with trend indicators. Use for KPIs, headline numbers, and performance summaries."
+            >
+              <StatCardShowcase />
+            </SectionCard>
+
+            <SectionCard
+              id="trend-line"
+              title="Trend Line Chart"
+              description="Use for showing trends over time. Sidra Green (#11362A) for primary metric, Sage (#889A68) for secondary."
+            >
+              <TrendLineChart />
+            </SectionCard>
+
+            <SectionCard
+              id="horizontal-bar"
+              title="Horizontal Bar Chart"
+              description="Default pattern using Sage green (#889A68). Single color for value comparison."
+            >
+              <HorizontalBarChart />
+            </SectionCard>
+
+            <SectionCard
+              id="horizontal-stacked"
+              title="Horizontal Stacked Bar Chart"
+              description="Two groups stacked within 100% neutral base. Sidra Green + Light Sage on Warm Gray."
+            >
+              <HorizontalStackedBarChart />
+            </SectionCard>
+
+            <SectionCard
+              id="vertical-bar"
+              title="Vertical Bar Chart"
+              description="Time series or sequential data. Single Sage color."
+            >
+              <VerticalBarChart />
+            </SectionCard>
+
+            <SectionCard
+              id="comparison-bar"
+              title="Comparison Bar Chart"
+              description="Progress toward baseline. Sage stacked on neutral gray (100% = baseline)."
+            >
+              <ComparisonBarChart />
+            </SectionCard>
+
+            <SectionCard
+              id="vertical-stacked"
+              title="Vertical Stacked Bar Chart"
+              description="Composition breakdown. Use categorical palette for 5+ segments."
+            >
+              <StackedBarChart />
+            </SectionCard>
+
+            <SectionCard
+              id="donut"
+              title="Donut Chart with Table"
+              description="Part-to-whole with external labels and color-coded data table."
+            >
+              <DonutChartWithLabels />
+            </SectionCard>
+
+            <SectionCard
+              id="treemap"
+              title="Treemap"
+              description="Proportional area for hierarchical data. Use categorical palette."
+            >
+              <Treemap />
+            </SectionCard>
+
+            <SectionCard
+              id="index-scale"
+              title="Geographic / Index Scale"
+              description="Sequential single-color scale for maps, rankings, performance indices."
+            >
+              <IndexScale />
+            </SectionCard>
+
+            <SectionCard
+              id="waffle"
+              title="Waffle Chart"
+              description="Proportional grid for 2-3 category breakdowns (e.g., automation levels)."
+            >
+              <WaffleChart />
+            </SectionCard>
+
+            <SectionCard
+              id="bubble"
+              title="Bubble Chart"
+              description="Size encodes magnitude, color encodes category. Use categorical palette."
+            >
+              <BubbleChart />
+            </SectionCard>
+
+            <SectionCard
+              id="post"
+              title="Post"
+              description="Social media post card with background image, gradient overlay, platform badge, and engagement metrics. Supports Instagram, Facebook, LinkedIn, Twitter/X, and YouTube."
+            >
+              <PostShowcase />
+            </SectionCard>
+
+            {/* TYPOGRAPHY & SPACING */}
+
+            <div id="reference" className="mt-16 mb-8 pt-8 border-t border-[#E8E8E5] scroll-mt-6">
+              <h2 className="text-xl font-semibold text-[#0B241C]">Reference</h2>
+              <p className="text-sm text-[#4A7561] mt-1">Typography and spacing guidelines.</p>
+            </div>
+
+            <SectionCard id="typography" title="Typography Quick Reference">
+              <div className="space-y-4">
+                <div className="flex items-baseline gap-6">
+                  <span className="w-24 text-xs text-[#4A7561]">Display</span>
+                  <span className="text-4xl font-light text-[#0B241C]">766,000</span>
+                  <span className="text-xs font-mono text-[#9AB3A9]">48px / 300</span>
+                </div>
+                <div className="flex items-baseline gap-6">
+                  <span className="w-24 text-xs text-[#4A7561]">H1</span>
+                  <span className="text-2xl font-semibold text-[#0B241C]">Dashboard Overview</span>
+                  <span className="text-xs font-mono text-[#9AB3A9]">32px / 600</span>
+                </div>
+                <div className="flex items-baseline gap-6">
+                  <span className="w-24 text-xs text-[#4A7561]">Body</span>
+                  <span className="text-sm text-[#0B241C]">Platform distribution across engagement types</span>
+                  <span className="text-xs font-mono text-[#9AB3A9]">14px / 400</span>
+                </div>
+                <div className="flex items-baseline gap-6">
+                  <span className="w-24 text-xs text-[#4A7561]">Label</span>
+                  <span className="text-xs font-semibold uppercase tracking-wider text-[#4A7561]">Total Followers</span>
+                  <span className="text-xs font-mono text-[#9AB3A9]">12px / 600 / uppercase</span>
+                </div>
+              </div>
+            </SectionCard>
+
+            <SectionCard id="spacing" title="Spacing Quick Reference">
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  {[
+                    { token: 'space-1', value: '4px' },
+                    { token: 'space-2', value: '8px' },
+                    { token: 'space-4', value: '16px' },
+                    { token: 'space-6', value: '24px' },
+                    { token: 'space-8', value: '32px' },
+                  ].map((s, i) => (
+                    <div key={i} className="flex items-center gap-3">
+                      <span className="w-16 text-xs font-mono text-[#4A7561]">{s.token}</span>
+                      <div className="h-3 rounded bg-[#889A68]" style={{ width: s.value }} />
+                      <span className="text-xs text-[#9AB3A9]">{s.value}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="space-y-2 text-xs text-[#4A7561]">
+                  <p>• Page padding: <code className="bg-[#F5F5F3] px-1 rounded">32px</code></p>
+                  <p>• Card padding: <code className="bg-[#F5F5F3] px-1 rounded">24px</code></p>
+                  <p>• Card grid gap: <code className="bg-[#F5F5F3] px-1 rounded">16px</code></p>
+                  <p>• Section margin: <code className="bg-[#F5F5F3] px-1 rounded">32px</code></p>
+                </div>
+              </div>
+            </SectionCard>
+
+            {/* COLOR USAGE RULES */}
+            
+            <SectionCard 
+              title="Color Usage Rules" 
+              description="When to use which palette"
+            >
+              <div className="grid md:grid-cols-4 gap-4">
+                <div className="bg-[#F5F5F3] rounded-lg p-4 border border-[#E8E8E5]">
+                  <p className="text-sm font-semibold text-[#0B241C] mb-2">Default</p>
+                  <p className="text-xs text-[#4A7561] mb-3">Single-color bars</p>
+                  <div className="flex gap-2">
+                    <div className="w-8 h-8 rounded" style={{ backgroundColor: '#889A68' }} />
+                    <div className="w-8 h-8 rounded" style={{ backgroundColor: '#F5F5F3', border: '1px solid #E8E8E5' }} />
+                  </div>
+                  <p className="text-xs text-[#9AB3A9] mt-2">Sage on light</p>
+                </div>
+                <div className="bg-[#F5F5F3] rounded-lg p-4 border border-[#E8E8E5]">
+                  <p className="text-sm font-semibold text-[#0B241C] mb-2">Comparison</p>
+                  <p className="text-xs text-[#4A7561] mb-3">Value on baseline</p>
+                  <div className="flex gap-2">
+                    <div className="w-8 h-8 rounded" style={{ backgroundColor: '#889A68' }} />
+                    <div className="w-8 h-8 rounded" style={{ backgroundColor: '#D6D6D2' }} />
+                  </div>
+                  <p className="text-xs text-[#9AB3A9] mt-2">Sage on neutral</p>
+                </div>
+                <div className="bg-[#F5F5F3] rounded-lg p-4 border border-[#E8E8E5]">
+                  <p className="text-sm font-semibold text-[#0B241C] mb-2">Multi-group</p>
+                  <p className="text-xs text-[#4A7561] mb-3">Two groups stacked</p>
+                  <div className="flex gap-1">
+                    <div className="w-6 h-8 rounded" style={{ backgroundColor: '#11362A' }} />
+                    <div className="w-6 h-8 rounded" style={{ backgroundColor: '#BDC8AB' }} />
+                    <div className="w-6 h-8 rounded" style={{ backgroundColor: '#D6D6D2' }} />
+                  </div>
+                  <p className="text-xs text-[#9AB3A9] mt-2">Sidra + Sage + Gray</p>
+                </div>
+                <div className="bg-[#F5F5F3] rounded-lg p-4 border border-[#E8E8E5]">
+                  <p className="text-sm font-semibold text-[#0B241C] mb-2">Categorical</p>
+                  <p className="text-xs text-[#4A7561] mb-3">5+ distinct items</p>
+                  <div className="flex gap-1">
+                    {categoricalColors.slice(0, 5).map((c, i) => (
+                      <div key={i} className="w-5 h-8 rounded" style={{ backgroundColor: c.hex }} />
+                    ))}
+                  </div>
+                  <p className="text-xs text-[#9AB3A9] mt-2">Tertiary palette</p>
+                </div>
+              </div>
+
+              <div className="mt-6 p-4 bg-[#E8ECDF] rounded-lg border border-[#BDC8AB]">
+                <p className="text-sm font-semibold text-[#2A4639] mb-2">Performance / Sequential Data</p>
+                <p className="text-xs text-[#4A7561] mb-3">Use single color family (Sidra Green ramp) for heatmaps, geographic scales, and performance indices.</p>
+                <div className="flex h-6 rounded overflow-hidden">
+                  {['#E8EEEB', '#C5D5CC', '#9EBAA9', '#779F87', '#5A8A6D', '#3D7553', '#2B5C40', '#11362A'].map((c, i) => (
+                    <div key={i} className="flex-1" style={{ backgroundColor: c }} />
+                  ))}
+                </div>
+              </div>
+            </SectionCard>
+
+            {/* Footer */}
+            <div className="mt-8 text-center text-sm text-[#9AB3A9]">
+              Click any color swatch to copy hex value • QF Design System v2.1
+            </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Render the app
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<QFDesignSystem />);
+  </script>
+</body>
+</html>
