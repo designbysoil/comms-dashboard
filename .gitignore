@@ -1,0 +1,11 @@
+# Local Netlify folder
+.netlify
+
+# Claude Code
+.claude/
+
+# OS files
+.DS_Store
+
+# Node
+node_modules/

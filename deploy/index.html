@@ -1,0 +1,1255 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QF Design System — Communications Dashboard</title>
+  
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  
+  <!-- React & ReactDOM -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+  
+  <!-- Babel for JSX -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+  
+  <style>
+    /* Smooth scrolling */
+    html { scroll-behavior: smooth; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+  
+  <script type="text/babel">
+    const { useState } = React;
+
+    // =============================================================================
+    // QF COMMUNICATIONS DASHBOARD — DESIGN SYSTEM v2.1
+    // =============================================================================
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // HELPER COMPONENTS
+    // ─────────────────────────────────────────────────────────────────────────────
+
+    const ColorSwatch = ({ color, name, hex, size = 'default' }) => {
+      const [copied, setCopied] = useState(false);
+      
+      const copyToClipboard = () => {
+        navigator.clipboard.writeText(hex);
+        setCopied(true);
+        setTimeout(() => setCopied(false), 1500);
+      };
+
+      const isLight = (hexColor) => {
+        const r = parseInt(hexColor.slice(1, 3), 16);
+        const g = parseInt(hexColor.slice(3, 5), 16);
+        const b = parseInt(hexColor.slice(5, 7), 16);
+        return (r * 299 + g * 587 + b * 114) / 1000 > 128;
+      };
+      
+      const heights = { small: 'h-12', default: 'h-16', large: 'h-20' };
+      
+      return (
+        <div className="cursor-pointer group relative" onClick={copyToClipboard}>
+          <div 
+            className={`${heights[size]} rounded-lg border border-black/5 transition-all group-hover:scale-105 group-hover:shadow-md flex items-end p-2`}
+            style={{ backgroundColor: color }}
+          >
+            <span className={`text-xs font-medium ${isLight(color) ? 'text-gray-700' : 'text-white/80'}`}>
+              {name}
+            </span>
+          </div>
+          <p className="text-xs text-gray-500 font-mono mt-1 text-center">{hex}</p>
+          {copied && (
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 bg-[#0B241C] text-white text-xs px-2 py-1 rounded z-10">
+              Copied!
+            </div>
+          )}
+        </div>
+      );
+    };
+
+    const Tooltip = ({ children, visible, position = 'top' }) => {
+      if (!visible) return null;
+      const positions = {
+        top: 'bottom-full left-1/2 -translate-x-1/2 mb-2',
+        center: 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2',
+        right: 'left-full top-1/2 -translate-y-1/2 ml-2',
+      };
+      return (
+        <div className={`absolute ${positions[position]} bg-white border border-[#E8E8E5] rounded-lg shadow-lg px-4 py-3 pointer-events-none z-20 whitespace-nowrap`}>
+          {children}
+        </div>
+      );
+    };
+
+    const SectionCard = ({ title, description, children }) => (
+      <section className="bg-white rounded-xl p-6 border border-[#E8E8E5] mb-6">
+        <div className="mb-6">
+          <h2 className="text-lg font-semibold text-[#0B241C]">{title}</h2>
+          {description && <p className="text-sm text-[#4A7561] mt-1">{description}</p>}
+        </div>
+        {children}
+      </section>
+    );
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // CHART COMPONENTS
+    // ─────────────────────────────────────────────────────────────────────────────
+
+    // TREND LINE CHART
+    const TrendLineChart = () => {
+      const [hovered, setHovered] = useState(null);
+      
+      const data = [
+        { month: 'Jan', newVisitors: 85000, returning: 45000 },
+        { month: 'Feb', newVisitors: 92000, returning: 48000 },
+        { month: 'Mar', newVisitors: 98000, returning: 52000 },
+        { month: 'Apr', newVisitors: 105000, returning: 55000 },
+        { month: 'May', newVisitors: 115000, returning: 58000 },
+        { month: 'Jun', newVisitors: 120000, returning: 60000 },
+      ];
+      
+      const maxValue = 130000;
+      const chartHeight = 200;
+      const chartWidth = 500;
+      
+      const getY = (value) => chartHeight - (value / maxValue) * chartHeight;
+      const getX = (index) => (index / (data.length - 1)) * chartWidth;
+      
+      const newVisitorsPath = data.map((d, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getY(d.newVisitors)}`).join(' ');
+      const returningPath = data.map((d, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getY(d.returning)}`).join(' ');
+      
+      return (
+        <div>
+          <div className="flex items-center gap-8 mb-4">
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-0.5" style={{ backgroundColor: '#11362A' }} />
+              <span className="text-sm text-[#2A4639]">New Visitors</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-0.5" style={{ backgroundColor: '#889A68' }} />
+              <span className="text-sm text-[#2A4639]">Returning Visitors</span>
+            </div>
+          </div>
+          
+          <div className="flex">
+            <div className="flex flex-col justify-between text-xs text-[#4A7561] pr-3 w-16 text-right" style={{ height: `${chartHeight}px` }}>
+              <span>120,000</span><span>90,000</span><span>60,000</span><span>30,000</span><span>0</span>
+            </div>
+            
+            <div className="flex-1 relative" style={{ height: `${chartHeight}px` }}>
+              <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
+                {[0,1,2,3,4].map(i => <div key={i} className="border-t border-dashed border-[#E8E8E5]" />)}
+              </div>
+              
+              <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="w-full h-full overflow-visible">
+                <path d={newVisitorsPath} fill="none" stroke="#11362A" strokeWidth="2" />
+                <path d={returningPath} fill="none" stroke="#889A68" strokeWidth="2" />
+                
+                {data.map((d, i) => (
+                  <g key={i}>
+                    <circle 
+                      cx={getX(i)} cy={getY(d.newVisitors)} r="6" 
+                      fill="white" stroke="#11362A" strokeWidth="2"
+                      className="cursor-pointer"
+                      onMouseEnter={() => setHovered(i)}
+                      onMouseLeave={() => setHovered(null)}
+                    />
+                    <circle 
+                      cx={getX(i)} cy={getY(d.returning)} r="6" 
+                      fill="white" stroke="#889A68" strokeWidth="2"
+                      className="cursor-pointer"
+                      onMouseEnter={() => setHovered(i)}
+                      onMouseLeave={() => setHovered(null)}
+                    />
+                  </g>
+                ))}
+              </svg>
+              
+              {hovered !== null && (
+                <div 
+                  className="absolute bg-white border border-[#E8E8E5] rounded-lg shadow-lg px-4 py-3 pointer-events-none z-20"
+                  style={{ left: `${(hovered / (data.length - 1)) * 100}%`, top: '20%', transform: 'translateX(-50%)' }}
+                >
+                  <p className="text-sm font-medium text-[#0B241C] mb-2">{data[hovered].month}</p>
+                  <p className="text-sm text-[#11362A]">New: {data[hovered].newVisitors.toLocaleString()}</p>
+                  <p className="text-sm text-[#889A68]">Returning: {data[hovered].returning.toLocaleString()}</p>
+                </div>
+              )}
+            </div>
+          </div>
+          
+          <div className="flex ml-16 mt-3">
+            {data.map((d, i) => (
+              <div key={i} className="flex-1 text-center">
+                <span className="text-sm text-[#4A7561]">{d.month}</span>
+              </div>
+            ))}
+          </div>
+          
+          <div className="text-center mt-6">
+            <p className="text-4xl font-light text-[#0B241C]">66% / 34%</p>
+            <p className="text-sm text-[#4A7561] mt-1">New vs Returning Visitors</p>
+          </div>
+        </div>
+      );
+    };
+
+    // HORIZONTAL BAR CHART
+    const HorizontalBarChart = () => {
+      const [hovered, setHovered] = useState(null);
+      
+      const data = [
+        { label: 'Marketing & Advertising', value: 37 },
+        { label: 'Technology', value: 35 },
+        { label: 'Consulting', value: 30 },
+        { label: 'Teaching', value: 19 },
+        { label: 'Accounting', value: 16 },
+        { label: 'Healthcare', value: 15 },
+      ];
+      
+      const maxValue = 40;
+      
+      return (
+        <div className="space-y-3">
+          {data.map((item, i) => (
+            <div 
+              key={i}
+              className="relative cursor-pointer"
+              onMouseEnter={() => setHovered(i)}
+              onMouseLeave={() => setHovered(null)}
+            >
+              <div className="flex items-center gap-4">
+                <div className="w-36 text-right">
+                  <span className="text-sm text-[#0B241C]">{item.label}</span>
+                </div>
+                <div className="flex-1 relative">
+                  <div className="w-full h-8 bg-[#F5F5F3] rounded overflow-hidden">
+                    <div 
+                      className="h-full rounded flex items-center justify-end pr-3 transition-all duration-300"
+                      style={{ 
+                        width: `${(item.value / maxValue) * 100}%`,
+                        backgroundColor: '#889A68',
+                        opacity: hovered !== null && hovered !== i ? 0.4 : 1
+                      }}
+                    >
+                      <span className="text-white text-xs font-semibold px-3 py-1 rounded-full" style={{ backgroundColor: '#434340' }}>
+                        {item.value}%
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <Tooltip visible={hovered === i} position="top">
+                <p className="text-sm font-medium text-[#0B241C]">{item.label}</p>
+                <p className="text-lg font-semibold text-[#11362A]">{item.value}%</p>
+              </Tooltip>
+            </div>
+          ))}
+          
+          <div className="flex items-center gap-4 mt-4">
+            <div className="w-36" />
+            <div className="flex-1 flex justify-between text-xs text-[#4A7561]">
+              <span>0%</span><span>10%</span><span>20%</span><span>30%</span><span>40%</span>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // HORIZONTAL STACKED BAR CHART
+    const HorizontalStackedBarChart = () => {
+      const [hovered, setHovered] = useState(null);
+      
+      const data = [
+        { label: 'Senior leaders understand how gen AI can create value for the business', groupA: 39, groupB: 64 },
+        { label: 'Have an enterprise-wide road map for gen AI, prioritized based on value, feasibility, and risk', groupA: 25, groupB: 59 },
+        { label: 'Have appointed a credible, empowered leader of gen AI initiatives', groupA: 21, groupB: 32 },
+      ];
+      
+      return (
+        <div>
+          <div className="flex items-center gap-6 text-sm mb-6">
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 rounded" style={{ backgroundColor: '#11362A' }} />
+              <span className="text-[#2A4639]">All other respondents</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 rounded" style={{ backgroundColor: '#BDC8AB' }} />
+              <span className="text-[#2A4639]">High performers</span>
+            </div>
+          </div>
+          
+          <div className="space-y-6">
+            {data.map((item, i) => (
+              <div 
+                key={i}
+                className="cursor-pointer"
+                onMouseEnter={() => setHovered(i)}
+                onMouseLeave={() => setHovered(null)}
+              >
+                <p className="text-sm text-[#4A7561] mb-2 max-w-md">{item.label}</p>
+                <div className="relative">
+                  <div 
+                    className="w-full h-10 rounded overflow-hidden flex transition-opacity duration-200"
+                    style={{ 
+                      backgroundColor: '#D6D6D2',
+                      opacity: hovered !== null && hovered !== i ? 0.4 : 1
+                    }}
+                  >
+                    <div 
+                      className="h-full flex items-center justify-end pr-3"
+                      style={{ 
+                        width: `${item.groupA}%`,
+                        backgroundColor: '#11362A'
+                      }}
+                    >
+                      <span className="text-white text-xs font-semibold px-3 py-1 rounded-full" style={{ backgroundColor: '#434340' }}>{item.groupA}</span>
+                    </div>
+                    <div 
+                      className="h-full flex items-center justify-end pr-3"
+                      style={{ 
+                        width: `${item.groupB - item.groupA}%`,
+                        backgroundColor: '#BDC8AB'
+                      }}
+                    >
+                      <span className="text-white text-xs font-semibold px-3 py-1 rounded-full" style={{ backgroundColor: '#434340' }}>{item.groupB}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          <div className="flex justify-between text-xs text-[#4A7561] mt-4">
+            <span>0</span><span>20</span><span>40</span><span>60</span><span>80</span><span>100</span>
+          </div>
+        </div>
+      );
+    };
+
+    // VERTICAL BAR CHART
+    const VerticalBarChart = () => {
+      const [hovered, setHovered] = useState(null);
+      
+      const data = [
+        { month: 'Jan', value: 60 },
+        { month: 'Feb', value: 70 },
+        { month: 'Mar', value: 35 },
+        { month: 'Apr', value: 76 },
+        { month: 'May', value: 82 },
+        { month: 'Jun', value: 68 },
+      ];
+      
+      const maxValue = 100;
+      const chartHeight = 160;
+      
+      return (
+        <div>
+          <div className="flex">
+            <div className="flex flex-col justify-between text-xs text-[#4A7561] pr-3 w-8" style={{ height: `${chartHeight}px` }}>
+              <span>100</span><span>75</span><span>50</span><span>25</span><span>0</span>
+            </div>
+            
+            <div className="flex-1 relative">
+              <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
+                {[0,1,2,3,4].map(i => <div key={i} className="border-t border-dashed border-[#E8E8E5]" />)}
+              </div>
+              
+              <div className="flex items-end justify-around relative" style={{ height: `${chartHeight}px` }}>
+                {data.map((item, i) => (
+                  <div 
+                    key={i} 
+                    className="flex flex-col items-center relative cursor-pointer"
+                    onMouseEnter={() => setHovered(i)} 
+                    onMouseLeave={() => setHovered(null)}
+                  >
+                    <div 
+                      className="w-10 rounded-t transition-all duration-200"
+                      style={{ 
+                        height: `${(item.value / maxValue) * chartHeight}px`, 
+                        backgroundColor: '#889A68',
+                        opacity: hovered !== null && hovered !== i ? 0.4 : 1 
+                      }} 
+                    />
+                    <Tooltip visible={hovered === i} position="top">
+                      <p className="text-sm font-medium text-[#0B241C]">{item.month}</p>
+                      <p className="text-lg font-semibold text-[#11362A]">{item.value}</p>
+                    </Tooltip>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex ml-8 mt-2">
+            {data.map((item, i) => (
+              <div key={i} className="flex-1 text-center">
+                <span className="text-xs text-[#4A7561]">{item.month}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    };
+
+    // COMPARISON BAR CHART
+    const ComparisonBarChart = () => {
+      const [hovered, setHovered] = useState(null);
+      
+      const data = [
+        { label: 'Info Retrieval', current: 73 },
+        { label: 'Common Tasks', current: 71 },
+        { label: 'LLM Search', current: 47 },
+        { label: 'Code Assist', current: 44 },
+        { label: 'Meeting Summary', current: 26 },
+      ];
+      
+      return (
+        <div>
+          <div className="flex items-center gap-6 text-xs mb-4">
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 rounded" style={{ backgroundColor: '#889A68' }} />
+              <span className="text-[#2A4639]">This Period</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-4 rounded" style={{ backgroundColor: '#D6D6D2' }} />
+              <span className="text-[#2A4639]">Baseline (100%)</span>
+            </div>
+          </div>
+          
+          <div className="space-y-3">
+            {data.map((item, i) => (
+              <div 
+                key={i}
+                className="relative cursor-pointer"
+                onMouseEnter={() => setHovered(i)}
+                onMouseLeave={() => setHovered(null)}
+              >
+                <div className="flex items-center gap-4">
+                  <div className="w-28 text-right">
+                    <span className="text-xs text-[#4A7561]">{item.label}</span>
+                  </div>
+                  <div className="flex-1">
+                    <div 
+                      className="relative h-8 rounded overflow-hidden transition-opacity duration-200"
+                      style={{ 
+                        backgroundColor: '#D6D6D2',
+                        opacity: hovered !== null && hovered !== i ? 0.4 : 1
+                      }}
+                    >
+                      <div 
+                        className="h-full rounded-l flex items-center justify-end pr-3"
+                        style={{ 
+                          width: `${item.current}%`,
+                          backgroundColor: '#889A68'
+                        }}
+                      >
+                        <span className="text-white text-xs font-semibold px-3 py-1 rounded-full" style={{ backgroundColor: '#434340' }}>
+                          {item.current}%
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+                <Tooltip visible={hovered === i} position="top">
+                  <p className="text-sm font-medium text-[#0B241C] mb-1">{item.label}</p>
+                  <p className="text-sm"><span className="text-[#889A68] font-medium">{item.current}%</span> of baseline</p>
+                </Tooltip>
+              </div>
+            ))}
+          </div>
+          
+          <div className="flex items-center gap-4 mt-4">
+            <div className="w-28" />
+            <div className="flex-1 flex justify-between text-xs text-[#4A7561]">
+              <span>0%</span><span>20%</span><span>40%</span><span>60%</span><span>80%</span><span>100%</span>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // STACKED BAR CHART
+    const StackedBarChart = () => {
+      const [hovered, setHovered] = useState(null);
+      
+      const platforms = [
+        { name: 'Facebook', color: '#6B7D3D' },
+        { name: 'Instagram', color: '#D4847A' },
+        { name: 'LinkedIn', color: '#4A6B8A' },
+        { name: 'Twitter', color: '#B8B4D4' },
+        { name: 'YouTube', color: '#1A3530' },
+      ];
+      
+      const data = [
+        { type: 'Likes', total: 48500, breakdown: { Facebook: 16500, Instagram: 14500, LinkedIn: 5500, Twitter: 6500, YouTube: 5500 } },
+        { type: 'Comments', total: 8900, breakdown: { Facebook: 2400, Instagram: 3200, LinkedIn: 800, Twitter: 1800, YouTube: 700 } },
+        { type: 'Shares', total: 5500, breakdown: { Facebook: 1500, Instagram: 1800, LinkedIn: 700, Twitter: 1000, YouTube: 500 } },
+        { type: 'Saves', total: 4200, breakdown: { Facebook: 1200, Instagram: 1600, LinkedIn: 400, Twitter: 600, YouTube: 400 } },
+      ];
+      
+      const maxTotal = 60000;
+      const chartHeight = 180;
+      
+      return (
+        <div>
+          <div className="flex flex-wrap gap-4 text-xs mb-4">
+            {platforms.map((p, i) => (
+              <div key={i} className="flex items-center gap-1.5">
+                <div className="w-3 h-3 rounded" style={{ backgroundColor: p.color }} />
+                <span className="text-[#2A4639]">{p.name}</span>
+              </div>
+            ))}
+          </div>
+          
+          <div className="flex">
+            <div className="flex flex-col justify-between text-xs text-[#4A7561] pr-3 w-10" style={{ height: `${chartHeight}px` }}>
+              <span>60K</span><span>45K</span><span>30K</span><span>15K</span><span>0</span>
+            </div>
+            
+            <div className="flex-1 relative">
+              <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
+                {[0,1,2,3,4].map(i => <div key={i} className="border-t border-dashed border-[#E8E8E5]" />)}
+              </div>
+              
+              <div className="flex items-end justify-around relative" style={{ height: `${chartHeight}px` }}>
+                {data.map((item, barIndex) => {
+                  const barHeight = (item.total / maxTotal) * chartHeight;
+                  return (
+                    <div 
+                      key={barIndex} 
+                      className="flex flex-col items-center relative cursor-pointer"
+                      onMouseEnter={() => setHovered(barIndex)} 
+                      onMouseLeave={() => setHovered(null)}
+                    >
+                      <div className="w-16 relative flex flex-col-reverse rounded-t overflow-hidden" style={{ height: `${barHeight}px` }}>
+                        {platforms.map((platform, segIndex) => {
+                          const segmentValue = item.breakdown[platform.name];
+                          const segmentHeight = (segmentValue / item.total) * 100;
+                          return (
+                            <div 
+                              key={segIndex} 
+                              style={{ 
+                                height: `${segmentHeight}%`, 
+                                backgroundColor: platform.color,
+                                opacity: hovered !== null && hovered !== barIndex ? 0.4 : 1 
+                              }}
+                              className="transition-opacity duration-200" 
+                            />
+                          );
+                        })}
+                      </div>
+                      <Tooltip visible={hovered === barIndex} position="top">
+                        <p className="text-sm font-medium text-[#0B241C] mb-2">{item.type}: {item.total.toLocaleString()}</p>
+                        {platforms.map((p, pi) => (
+                          <div key={pi} className="flex items-center gap-2 text-sm leading-relaxed">
+                            <div className="w-2 h-2 rounded" style={{ backgroundColor: p.color }} />
+                            <span className="text-[#2A4639]">{p.name}:</span>
+                            <span className="font-medium text-[#0B241C]">{item.breakdown[p.name].toLocaleString()}</span>
+                          </div>
+                        ))}
+                      </Tooltip>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+          
+          <div className="flex ml-10 mt-2">
+            {data.map((item, i) => (
+              <div key={i} className="flex-1 text-center">
+                <span className="text-xs text-[#4A7561]">{item.type}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    };
+
+    // DONUT CHART WITH LABELS
+    const DonutChartWithLabels = () => {
+      const [hovered, setHovered] = useState(null);
+      
+      const data = [
+        { name: 'Direct', value: 87500, percent: 35, color: '#B8B4D4' },
+        { name: 'Organic Search', value: 80000, percent: 32, color: '#11362A' },
+        { name: 'Paid Search', value: 45000, percent: 18, color: '#C4B49A' },
+        { name: 'Social Media', value: 30000, percent: 12, color: '#D4847A' },
+        { name: 'Referral', value: 10000, percent: 4, color: '#2D6A6A' },
+        { name: 'Email', value: 5000, percent: 2, color: '#C49A9A' },
+      ];
+      
+      const getPointOnCircle = (percent, offset, radius) => {
+        const angle = ((offset + percent / 2) / 100) * 360 - 90;
+        const rad = angle * Math.PI / 180;
+        return {
+          x: 150 + radius * Math.cos(rad),
+          y: 150 + radius * Math.sin(rad)
+        };
+      };
+
+      let cumulativePercent = 0;
+      const segments = data.map(d => {
+        const segment = { ...d, offset: cumulativePercent };
+        cumulativePercent += d.percent;
+        return segment;
+      });
+
+      return (
+        <div>
+          <div className="flex items-start gap-8">
+            <div className="relative flex-1">
+              <svg viewBox="0 0 300 300" className="w-full max-w-md">
+                {segments.map((segment, i) => {
+                  const circumference = 2 * Math.PI * 70;
+                  const strokeDash = (segment.percent / 100) * circumference;
+                  const strokeOffset = -(segment.offset / 100) * circumference;
+                  const labelPoint = getPointOnCircle(segment.percent, segment.offset, 120);
+                  const isLeft = labelPoint.x < 150;
+                  
+                  return (
+                    <g key={i}>
+                      <circle 
+                        cx="150" cy="150" r="70" 
+                        fill="none" 
+                        stroke={segment.color} 
+                        strokeWidth="35"
+                        strokeDasharray={`${strokeDash} ${circumference}`} 
+                        strokeDashoffset={strokeOffset}
+                        transform="rotate(-90 150 150)" 
+                        opacity={hovered !== null && hovered !== i ? 0.4 : 1}
+                        className="transition-opacity duration-200 cursor-pointer"
+                        onMouseEnter={() => setHovered(i)} 
+                        onMouseLeave={() => setHovered(null)} 
+                      />
+                      <text 
+                        x={labelPoint.x} 
+                        y={labelPoint.y - 6}
+                        textAnchor={isLeft ? 'end' : 'start'}
+                        fill="#0B241C"
+                        fontSize="11"
+                        fontWeight="500"
+                      >
+                        {segment.name}:
+                      </text>
+                      <text 
+                        x={labelPoint.x} 
+                        y={labelPoint.y + 8}
+                        textAnchor={isLeft ? 'end' : 'start'}
+                        fill="#4A7561"
+                        fontSize="10"
+                      >
+                        {segment.percent}%
+                      </text>
+                    </g>
+                  );
+                })}
+              </svg>
+            </div>
+          </div>
+          
+          <div className="mt-6 border border-[#E8E8E5] rounded-lg overflow-hidden">
+            {data.map((item, i) => (
+              <div 
+                key={i}
+                className={`flex items-center justify-between px-4 py-3 cursor-pointer transition-colors ${
+                  hovered === i ? 'bg-[#F5F5F3]' : i % 2 === 0 ? 'bg-white' : 'bg-[#FAFAF9]'
+                } ${i !== data.length - 1 ? 'border-b border-[#E8E8E5]' : ''}`}
+                onMouseEnter={() => setHovered(i)}
+                onMouseLeave={() => setHovered(null)}
+              >
+                <div className="flex items-center gap-3">
+                  <div className="w-3 h-3 rounded-full" style={{ backgroundColor: item.color }} />
+                  <span className="text-sm text-[#0B241C]">{item.name}</span>
+                </div>
+                <div className="flex items-center gap-8">
+                  <span className="text-sm font-medium text-[#0B241C] w-12 text-right">{item.percent}%</span>
+                  <span className="text-sm text-[#385C4B] w-16 text-right">+{(Math.random() * 20 + 5).toFixed(1)}%</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    };
+
+    // TREEMAP
+    const Treemap = () => {
+      const [hovered, setHovered] = useState(null);
+      
+      const data = [
+        { name: 'Technology & Development', percent: 26.1, color: '#4A6B8A', size: 'large' },
+        { name: 'Education & Research', percent: 10.7, color: '#6B7D3D', size: 'medium' },
+        { name: 'Arts & Entertainment', percent: 9.1, color: '#B8B4D4', size: 'medium' },
+        { name: 'Life Sciences', percent: 7.9, color: '#1A3530', size: 'small' },
+        { name: 'Business & Finance', percent: 7.4, color: '#D4847A', size: 'small' },
+        { name: 'Healthcare', percent: 2.8, color: '#C4B49A', size: 'tiny' },
+        { name: 'Community', percent: 2.6, color: '#889A68', size: 'tiny' },
+      ];
+      
+      return (
+        <div className="bg-[#F5F5F3] rounded-xl p-4 border border-[#E8E8E5]">
+          <div className="flex h-64 gap-1">
+            <div className="flex-[3] flex flex-col gap-1">
+              <div 
+                className={`flex-[2] rounded-lg p-4 flex flex-col justify-between cursor-pointer transition-opacity ${hovered !== null && hovered !== 0 ? 'opacity-40' : ''}`}
+                style={{ backgroundColor: data[0].color }}
+                onMouseEnter={() => setHovered(0)}
+                onMouseLeave={() => setHovered(null)}
+              >
+                <p className="text-white text-sm font-medium">{data[0].name}</p>
+                <p className="text-white/70 text-sm">{data[0].percent}%</p>
+              </div>
+              <div className="flex-1 flex gap-1">
+                <div 
+                  className={`flex-1 rounded-lg p-3 flex flex-col justify-between cursor-pointer transition-opacity ${hovered !== null && hovered !== 4 ? 'opacity-40' : ''}`}
+                  style={{ backgroundColor: data[4].color }}
+                  onMouseEnter={() => setHovered(4)}
+                  onMouseLeave={() => setHovered(null)}
+                >
+                  <p className="text-white text-xs font-medium">{data[4].name}</p>
+                  <p className="text-white/70 text-xs">{data[4].percent}%</p>
+                </div>
+                <div 
+                  className={`flex-1 rounded-lg p-3 flex flex-col justify-between cursor-pointer transition-opacity ${hovered !== null && hovered !== 3 ? 'opacity-40' : ''}`}
+                  style={{ backgroundColor: data[3].color }}
+                  onMouseEnter={() => setHovered(3)}
+                  onMouseLeave={() => setHovered(null)}
+                >
+                  <p className="text-white text-xs font-medium">{data[3].name}</p>
+                  <p className="text-white/70 text-xs">{data[3].percent}%</p>
+                </div>
+              </div>
+            </div>
+            <div className="flex-[2] flex flex-col gap-1">
+              <div 
+                className={`flex-[1.5] rounded-lg p-3 flex flex-col justify-between cursor-pointer transition-opacity ${hovered !== null && hovered !== 1 ? 'opacity-40' : ''}`}
+                style={{ backgroundColor: data[1].color }}
+                onMouseEnter={() => setHovered(1)}
+                onMouseLeave={() => setHovered(null)}
+              >
+                <p className="text-white text-sm font-medium">{data[1].name}</p>
+                <p className="text-white/70 text-sm">{data[1].percent}%</p>
+              </div>
+              <div 
+                className={`flex-1 rounded-lg p-3 flex flex-col justify-between cursor-pointer transition-opacity ${hovered !== null && hovered !== 2 ? 'opacity-40' : ''}`}
+                style={{ backgroundColor: data[2].color }}
+                onMouseEnter={() => setHovered(2)}
+                onMouseLeave={() => setHovered(null)}
+              >
+                <p className="text-[#0B241C] text-sm font-medium">{data[2].name}</p>
+                <p className="text-[#2A4639] text-sm">{data[2].percent}%</p>
+              </div>
+              <div className="flex-1 flex gap-1">
+                <div 
+                  className={`flex-1 rounded-lg p-2 flex flex-col justify-between cursor-pointer transition-opacity ${hovered !== null && hovered !== 6 ? 'opacity-40' : ''}`}
+                  style={{ backgroundColor: data[6].color }}
+                  onMouseEnter={() => setHovered(6)}
+                  onMouseLeave={() => setHovered(null)}
+                >
+                  <p className="text-white text-xs font-medium">{data[6].name}</p>
+                  <p className="text-white/70 text-xs">{data[6].percent}%</p>
+                </div>
+                <div 
+                  className={`flex-1 rounded-lg p-2 flex flex-col justify-between cursor-pointer transition-opacity ${hovered !== null && hovered !== 5 ? 'opacity-40' : ''}`}
+                  style={{ backgroundColor: data[5].color }}
+                  onMouseEnter={() => setHovered(5)}
+                  onMouseLeave={() => setHovered(null)}
+                >
+                  <p className="text-[#0B241C] text-xs font-medium">{data[5].name}</p>
+                  <p className="text-[#2A4639] text-xs">{data[5].percent}%</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // INDEX SCALE
+    const IndexScale = () => {
+      const colors = [
+        '#E8EEEB', '#D0DDD5', '#B8CCBF', '#9EBAA9', 
+        '#84A893', '#6A967D', '#508467', '#3D7253', '#2A6040', '#11362A'
+      ];
+      
+      return (
+        <div>
+          <div className="flex h-10 rounded-lg overflow-hidden">
+            {colors.map((color, i) => (
+              <div key={i} className="flex-1" style={{ backgroundColor: color }} />
+            ))}
+          </div>
+          <div className="flex justify-between text-xs text-[#4A7561] mt-3">
+            <span>Emerging (bottom 25%)</span>
+            <span>Lower middle</span>
+            <span>Upper middle</span>
+            <span>Leading (top 25%)</span>
+          </div>
+        </div>
+      );
+    };
+
+    // WAFFLE CHART
+    const WaffleChart = () => {
+      const categories = [
+        { name: 'Automated', percent: 35, color: '#11362A' },
+        { name: 'Augmented', percent: 30, color: '#889A68' },
+        { name: 'Manual', percent: 35, color: '#D6D6D2' },
+      ];
+      
+      const cells = Array.from({ length: 100 }, (_, i) => {
+        if (i < categories[0].percent) return categories[0].color;
+        if (i < categories[0].percent + categories[1].percent) return categories[1].color;
+        return categories[2].color;
+      });
+      
+      return (
+        <div>
+          <div className="grid grid-cols-10 gap-1 mb-4">
+            {cells.map((color, i) => (
+              <div 
+                key={i}
+                className="aspect-square rounded-sm"
+                style={{ backgroundColor: color }}
+              />
+            ))}
+          </div>
+          <div className="flex gap-4 text-xs">
+            {categories.map((cat, i) => (
+              <div key={i} className="flex items-center gap-1.5">
+                <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: cat.color }} />
+                <span className="text-[#2A4639]">{cat.name} {cat.percent}%</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    };
+
+    // BUBBLE CHART
+    const BubbleChart = () => {
+      const [hovered, setHovered] = useState(null);
+      
+      const data = [
+        { name: 'Aerospace', value: 147, size: 180, x: 280, y: 220, color: '#B8B4D4' },
+        { name: 'Cleantech', value: 91, size: 130, x: 180, y: 90, color: '#6B7D3D' },
+        { name: 'Security', value: 91, size: 120, x: 100, y: 250, color: '#D4847A' },
+        { name: 'Home Services', value: 54, size: 80, x: 350, y: 80, color: '#1A3530' },
+        { name: 'Food & Beverage', value: 51, size: 75, x: 70, y: 120, color: '#4A6B8A' },
+        { name: 'Crypto', value: 36, size: 60, x: 150, y: 190, color: '#C4B49A' },
+      ];
+      
+      return (
+        <div className="relative" style={{ height: '350px' }}>
+          <svg viewBox="0 0 450 350" className="w-full h-full">
+            {data.map((item, i) => (
+              <g 
+                key={i}
+                onMouseEnter={() => setHovered(i)}
+                onMouseLeave={() => setHovered(null)}
+                className="cursor-pointer"
+              >
+                <circle 
+                  cx={item.x} 
+                  cy={item.y} 
+                  r={item.size / 2}
+                  fill={item.color}
+                  opacity={hovered !== null && hovered !== i ? 0.4 : 1}
+                  className="transition-opacity duration-200"
+                />
+                <text 
+                  x={item.x} 
+                  y={item.y - 8}
+                  textAnchor="middle" 
+                  fill={['#B8B4D4', '#C4B49A'].includes(item.color) ? '#0B241C' : '#FFFFFF'}
+                  fontSize="12"
+                  fontWeight="500"
+                >
+                  {item.name}
+                </text>
+                <text 
+                  x={item.x} 
+                  y={item.y + 10}
+                  textAnchor="middle" 
+                  fill={['#B8B4D4', '#C4B49A'].includes(item.color) ? '#2A4639' : 'rgba(255,255,255,0.8)'}
+                  fontSize="11"
+                >
+                  +{item.value}%
+                </text>
+              </g>
+            ))}
+          </svg>
+          
+          {hovered !== null && (
+            <div className="absolute top-4 right-4 bg-white border border-[#E8E8E5] rounded-lg shadow-lg px-4 py-3">
+              <div className="flex items-center gap-2 mb-1">
+                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: data[hovered].color }} />
+                <p className="text-sm font-medium text-[#0B241C]">{data[hovered].name}</p>
+              </div>
+              <p className="text-lg font-semibold text-[#11362A]">+{data[hovered].value}%</p>
+              <p className="text-xs text-[#4A7561]">Growth rate</p>
+            </div>
+          )}
+        </div>
+      );
+    };
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // MAIN COMPONENT
+    // ─────────────────────────────────────────────────────────────────────────────
+
+    function QFDesignSystem() {
+      const primaryColors = [
+        { name: '50', hex: '#F2F5F4' },
+        { name: '100', hex: '#E0E7E4' },
+        { name: '200', hex: '#C1CFC9' },
+        { name: '300', hex: '#9AB3A9' },
+        { name: '400', hex: '#6E9484' },
+        { name: '500', hex: '#4A7561' },
+        { name: '600', hex: '#385C4B' },
+        { name: '700', hex: '#2A4639' },
+        { name: '800', hex: '#11362A' },
+        { name: '900', hex: '#0B241C' },
+      ];
+
+      const sageColors = [
+        { name: '50', hex: '#F4F6F0' },
+        { name: '100', hex: '#E8ECDF' },
+        { name: '200', hex: '#D5DCCA' },
+        { name: '300', hex: '#BDC8AB' },
+        { name: '400', hex: '#A3B288' },
+        { name: '500', hex: '#889A68' },
+        { name: '600', hex: '#6B7A50' },
+        { name: '700', hex: '#525D3E' },
+        { name: '800', hex: '#3A422C' },
+        { name: '900', hex: '#24291B' },
+      ];
+
+      const neutralColors = [
+        { name: '50', hex: '#FAFAF9' },
+        { name: '100', hex: '#F5F5F3' },
+        { name: '200', hex: '#E8E8E5' },
+        { name: '300', hex: '#D6D6D2' },
+        { name: '400', hex: '#A8A8A3' },
+        { name: '500', hex: '#737370' },
+        { name: '600', hex: '#5C5C59' },
+        { name: '700', hex: '#434340' },
+        { name: '800', hex: '#2B2B29' },
+        { name: '900', hex: '#1A1A18' },
+      ];
+
+      const categoricalColors = [
+        { name: 'Olive', hex: '#6B7D3D' },
+        { name: 'Lavender', hex: '#B8B4D4' },
+        { name: 'Coral', hex: '#D4847A' },
+        { name: 'Steel', hex: '#4A6B8A' },
+        { name: 'Sand', hex: '#C4B49A' },
+        { name: 'Forest', hex: '#1A3530' },
+        { name: 'Teal', hex: '#2D6A6A' },
+        { name: 'Rose', hex: '#C49A9A' },
+      ];
+
+      const semanticColors = [
+        { name: 'Success', hex: '#385C4B' },
+        { name: 'Warning', hex: '#A3824A' },
+        { name: 'Error', hex: '#8B4049' },
+        { name: 'Info', hex: '#4A6B7C' },
+      ];
+
+      return (
+        <div className="min-h-screen bg-[#F5F5F3]" style={{ fontFamily: "system-ui, -apple-system, sans-serif" }}>
+          {/* Header */}
+          <div className="bg-[#11362A] text-white px-8 py-6">
+            <div className="max-w-5xl mx-auto">
+              <h1 className="text-2xl font-semibold">QF Design System</h1>
+              <p className="text-white/60 text-sm mt-1">Communications Dashboard — Color & Chart Reference v2.1</p>
+            </div>
+          </div>
+
+          <div className="max-w-5xl mx-auto p-8">
+            
+            {/* COLOR PALETTES */}
+            
+            <SectionCard 
+              title="Primary — Sidra Green" 
+              description="Brand color (Qatar Foundation) with 800 as the primary value. Use for buttons, navigation, icons, and key interactive elements."
+            >
+              <div className="grid grid-cols-5 md:grid-cols-10 gap-2 mb-6">
+                {primaryColors.map((c, i) => (
+                  <ColorSwatch key={i} color={c.hex} name={c.name} hex={c.hex} size="default" />
+                ))}
+              </div>
+              <div className="flex flex-wrap gap-3 pt-4 border-t border-[#E8E8E5]">
+                <button className="px-4 py-2 rounded-lg text-white text-sm font-medium" style={{ backgroundColor: '#11362A' }}>
+                  Primary Button
+                </button>
+                <button className="px-4 py-2 rounded-lg text-sm font-medium border-2" style={{ borderColor: '#11362A', color: '#11362A' }}>
+                  Secondary
+                </button>
+                <button className="px-4 py-2 rounded-lg text-sm font-medium" style={{ backgroundColor: '#E0E7E4', color: '#11362A' }}>
+                  Tertiary
+                </button>
+                <span className="px-3 py-2 rounded-lg text-white text-sm font-medium inline-flex items-center gap-2" style={{ backgroundColor: '#11362A' }}>
+                  <span className="w-5 h-5 rounded-full bg-white/20 flex items-center justify-center text-xs">3</span>
+                  Badge
+                </span>
+              </div>
+            </SectionCard>
+
+            <SectionCard 
+              title="Secondary — Sage" 
+              description="Used for data visualization, status indicators, heatmaps, and secondary UI elements."
+            >
+              <div className="grid grid-cols-5 md:grid-cols-10 gap-2">
+                {sageColors.map((c, i) => (
+                  <ColorSwatch key={i} color={c.hex} name={c.name} hex={c.hex} size="default" />
+                ))}
+              </div>
+            </SectionCard>
+
+            <SectionCard 
+              title="Neutrals — Warm Gray" 
+              description="Warm-tinted neutrals for text, borders, and backgrounds. Harmonizes with the green palette."
+            >
+              <div className="grid grid-cols-5 md:grid-cols-10 gap-2">
+                {neutralColors.map((c, i) => (
+                  <ColorSwatch key={i} color={c.hex} name={c.name} hex={c.hex} size="default" />
+                ))}
+              </div>
+            </SectionCard>
+
+            <div className="grid md:grid-cols-2 gap-6">
+              <SectionCard title="Tertiary — Categorical" description="Use only when 5+ distinct categories needed">
+                <div className="grid grid-cols-4 gap-2">
+                  {categoricalColors.map((c, i) => (
+                    <ColorSwatch key={i} color={c.hex} name={c.name} hex={c.hex} size="small" />
+                  ))}
+                </div>
+              </SectionCard>
+
+              <SectionCard title="Semantic" description="Status indicators, alerts">
+                <div className="grid grid-cols-4 gap-2">
+                  {semanticColors.map((c, i) => (
+                    <ColorSwatch key={i} color={c.hex} name={c.name} hex={c.hex} size="small" />
+                  ))}
+                </div>
+              </SectionCard>
+            </div>
+
+            {/* CHART TYPES */}
+            
+            <div className="mt-8 mb-6">
+              <h2 className="text-xl font-semibold text-[#0B241C]">Chart Types Reference</h2>
+              <p className="text-sm text-[#4A7561] mt-1">Interactive examples. Hover for tooltips.</p>
+            </div>
+
+            <SectionCard 
+              title="Trend Line Chart" 
+              description="Use for showing trends over time. Sidra Green (#11362A) for primary metric, Sage (#889A68) for secondary."
+            >
+              <TrendLineChart />
+            </SectionCard>
+
+            <SectionCard 
+              title="Horizontal Bar Chart" 
+              description="Default pattern using Sage green (#889A68). Single color for value comparison."
+            >
+              <HorizontalBarChart />
+            </SectionCard>
+
+            <SectionCard 
+              title="Horizontal Stacked Bar Chart" 
+              description="Two groups stacked within 100% neutral base. Sidra Green + Light Sage on Warm Gray."
+            >
+              <HorizontalStackedBarChart />
+            </SectionCard>
+
+            <SectionCard 
+              title="Vertical Bar Chart" 
+              description="Time series or sequential data. Single Sage color."
+            >
+              <VerticalBarChart />
+            </SectionCard>
+
+            <SectionCard 
+              title="Comparison Bar Chart" 
+              description="Progress toward baseline. Sage stacked on neutral gray (100% = baseline)."
+            >
+              <ComparisonBarChart />
+            </SectionCard>
+
+            <SectionCard 
+              title="Vertical Stacked Bar Chart" 
+              description="Composition breakdown. Use categorical palette for 5+ segments."
+            >
+              <StackedBarChart />
+            </SectionCard>
+
+            <SectionCard 
+              title="Donut Chart with Table" 
+              description="Part-to-whole with external labels and color-coded data table."
+            >
+              <DonutChartWithLabels />
+            </SectionCard>
+
+            <SectionCard 
+              title="Treemap" 
+              description="Proportional area for hierarchical data. Use categorical palette."
+            >
+              <Treemap />
+            </SectionCard>
+
+            <SectionCard 
+              title="Geographic / Index Scale" 
+              description="Sequential single-color scale for maps, rankings, performance indices."
+            >
+              <IndexScale />
+            </SectionCard>
+
+            <SectionCard 
+              title="Waffle Chart" 
+              description="Proportional grid for 2-3 category breakdowns (e.g., automation levels)."
+            >
+              <WaffleChart />
+            </SectionCard>
+
+            <SectionCard 
+              title="Bubble Chart" 
+              description="Size encodes magnitude, color encodes category. Use categorical palette."
+            >
+              <BubbleChart />
+            </SectionCard>
+
+            {/* TYPOGRAPHY & SPACING */}
+            
+            <SectionCard title="Typography Quick Reference">
+              <div className="space-y-4">
+                <div className="flex items-baseline gap-6">
+                  <span className="w-24 text-xs text-[#4A7561]">Display</span>
+                  <span className="text-4xl font-light text-[#0B241C]">766,000</span>
+                  <span className="text-xs font-mono text-[#9AB3A9]">48px / 300</span>
+                </div>
+                <div className="flex items-baseline gap-6">
+                  <span className="w-24 text-xs text-[#4A7561]">H1</span>
+                  <span className="text-2xl font-semibold text-[#0B241C]">Dashboard Overview</span>
+                  <span className="text-xs font-mono text-[#9AB3A9]">32px / 600</span>
+                </div>
+                <div className="flex items-baseline gap-6">
+                  <span className="w-24 text-xs text-[#4A7561]">Body</span>
+                  <span className="text-sm text-[#0B241C]">Platform distribution across engagement types</span>
+                  <span className="text-xs font-mono text-[#9AB3A9]">14px / 400</span>
+                </div>
+                <div className="flex items-baseline gap-6">
+                  <span className="w-24 text-xs text-[#4A7561]">Label</span>
+                  <span className="text-xs font-semibold uppercase tracking-wider text-[#4A7561]">Total Followers</span>
+                  <span className="text-xs font-mono text-[#9AB3A9]">12px / 600 / uppercase</span>
+                </div>
+              </div>
+            </SectionCard>
+
+            <SectionCard title="Spacing Quick Reference">
+              <div className="grid md:grid-cols-2 gap-6">
+                <div className="space-y-2">
+                  {[
+                    { token: 'space-1', value: '4px' },
+                    { token: 'space-2', value: '8px' },
+                    { token: 'space-4', value: '16px' },
+                    { token: 'space-6', value: '24px' },
+                    { token: 'space-8', value: '32px' },
+                  ].map((s, i) => (
+                    <div key={i} className="flex items-center gap-3">
+                      <span className="w-16 text-xs font-mono text-[#4A7561]">{s.token}</span>
+                      <div className="h-3 rounded bg-[#889A68]" style={{ width: s.value }} />
+                      <span className="text-xs text-[#9AB3A9]">{s.value}</span>
+                    </div>
+                  ))}
+                </div>
+                <div className="space-y-2 text-xs text-[#4A7561]">
+                  <p>• Page padding: <code className="bg-[#F5F5F3] px-1 rounded">32px</code></p>
+                  <p>• Card padding: <code className="bg-[#F5F5F3] px-1 rounded">24px</code></p>
+                  <p>• Card grid gap: <code className="bg-[#F5F5F3] px-1 rounded">16px</code></p>
+                  <p>• Section margin: <code className="bg-[#F5F5F3] px-1 rounded">32px</code></p>
+                </div>
+              </div>
+            </SectionCard>
+
+            {/* COLOR USAGE RULES */}
+            
+            <SectionCard 
+              title="Color Usage Rules" 
+              description="When to use which palette"
+            >
+              <div className="grid md:grid-cols-4 gap-4">
+                <div className="bg-[#F5F5F3] rounded-lg p-4 border border-[#E8E8E5]">
+                  <p className="text-sm font-semibold text-[#0B241C] mb-2">Default</p>
+                  <p className="text-xs text-[#4A7561] mb-3">Single-color bars</p>
+                  <div className="flex gap-2">
+                    <div className="w-8 h-8 rounded" style={{ backgroundColor: '#889A68' }} />
+                    <div className="w-8 h-8 rounded" style={{ backgroundColor: '#F5F5F3', border: '1px solid #E8E8E5' }} />
+                  </div>
+                  <p className="text-xs text-[#9AB3A9] mt-2">Sage on light</p>
+                </div>
+                <div className="bg-[#F5F5F3] rounded-lg p-4 border border-[#E8E8E5]">
+                  <p className="text-sm font-semibold text-[#0B241C] mb-2">Comparison</p>
+                  <p className="text-xs text-[#4A7561] mb-3">Value on baseline</p>
+                  <div className="flex gap-2">
+                    <div className="w-8 h-8 rounded" style={{ backgroundColor: '#889A68' }} />
+                    <div className="w-8 h-8 rounded" style={{ backgroundColor: '#D6D6D2' }} />
+                  </div>
+                  <p className="text-xs text-[#9AB3A9] mt-2">Sage on neutral</p>
+                </div>
+                <div className="bg-[#F5F5F3] rounded-lg p-4 border border-[#E8E8E5]">
+                  <p className="text-sm font-semibold text-[#0B241C] mb-2">Multi-group</p>
+                  <p className="text-xs text-[#4A7561] mb-3">Two groups stacked</p>
+                  <div className="flex gap-1">
+                    <div className="w-6 h-8 rounded" style={{ backgroundColor: '#11362A' }} />
+                    <div className="w-6 h-8 rounded" style={{ backgroundColor: '#BDC8AB' }} />
+                    <div className="w-6 h-8 rounded" style={{ backgroundColor: '#D6D6D2' }} />
+                  </div>
+                  <p className="text-xs text-[#9AB3A9] mt-2">Sidra + Sage + Gray</p>
+                </div>
+                <div className="bg-[#F5F5F3] rounded-lg p-4 border border-[#E8E8E5]">
+                  <p className="text-sm font-semibold text-[#0B241C] mb-2">Categorical</p>
+                  <p className="text-xs text-[#4A7561] mb-3">5+ distinct items</p>
+                  <div className="flex gap-1">
+                    {categoricalColors.slice(0, 5).map((c, i) => (
+                      <div key={i} className="w-5 h-8 rounded" style={{ backgroundColor: c.hex }} />
+                    ))}
+                  </div>
+                  <p className="text-xs text-[#9AB3A9] mt-2">Tertiary palette</p>
+                </div>
+              </div>
+
+              <div className="mt-6 p-4 bg-[#E8ECDF] rounded-lg border border-[#BDC8AB]">
+                <p className="text-sm font-semibold text-[#2A4639] mb-2">Performance / Sequential Data</p>
+                <p className="text-xs text-[#4A7561] mb-3">Use single color family (Sidra Green ramp) for heatmaps, geographic scales, and performance indices.</p>
+                <div className="flex h-6 rounded overflow-hidden">
+                  {['#E8EEEB', '#C5D5CC', '#9EBAA9', '#779F87', '#5A8A6D', '#3D7553', '#2B5C40', '#11362A'].map((c, i) => (
+                    <div key={i} className="flex-1" style={{ backgroundColor: c }} />
+                  ))}
+                </div>
+              </div>
+            </SectionCard>
+
+            {/* Footer */}
+            <div className="mt-8 text-center text-sm text-[#9AB3A9]">
+              Click any color swatch to copy hex value • QF Design System v2.1
+            </div>
+          </div>
+        </div>
+      );
+    }
+
+    // Render the app
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<QFDesignSystem />);
+  </script>
+</body>
+</html>
