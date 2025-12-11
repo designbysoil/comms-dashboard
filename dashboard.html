@@ -200,39 +200,43 @@
     // ─────────────────────────────────────────────────────────────────────────────
 
     const TopNavBar = () => {
-      const [activeTab, setActiveTab] = useState('social');
+      const tabs = [
+        { id: 'overview', label: 'Overview', href: '#' },
+        { id: 'social', label: 'Social Media', href: 'dashboard.html' },
+        { id: 'digital', label: 'Digital Media', href: 'digital-dashboard.html' },
+      ];
+
+      const currentTab = 'social';
 
       return (
-        <header className="bg-[#11362A] text-white">
+        <header className="bg-[#FAFAF9] border-b border-[#E8E8E5]">
           <div className="px-6 py-4 flex items-center justify-between">
             <div className="flex items-center gap-8">
-              <h1 className="text-lg font-semibold">Communications Dashboard</h1>
+              <h1 className="text-base font-medium text-[#11362A]" style={{ fontFamily: "'QF', system-ui, sans-serif" }}>
+                Communications Dashboard
+              </h1>
               <nav className="flex gap-1">
-                <button
-                  onClick={() => setActiveTab('overview')}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    activeTab === 'overview'
-                      ? 'bg-white/20 text-white'
-                      : 'text-white/70 hover:text-white hover:bg-white/10'
-                  }`}
-                >
-                  Overview
-                </button>
-                <button
-                  onClick={() => setActiveTab('social')}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    activeTab === 'social'
-                      ? 'bg-white/20 text-white'
-                      : 'text-white/70 hover:text-white hover:bg-white/10'
-                  }`}
-                >
-                  Social Media
-                </button>
+                {tabs.map(tab => (
+                  <a
+                    key={tab.id}
+                    href={tab.href}
+                    className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                      currentTab === tab.id
+                        ? 'bg-[#11362A] text-white'
+                        : 'text-[#11362A] hover:bg-[#E8E8E5]'
+                    }`}
+                    style={{ fontFamily: "'QF', system-ui, sans-serif" }}
+                  >
+                    {tab.label}
+                  </a>
+                ))}
               </nav>
             </div>
             <div className="flex items-center gap-4">
-              <button className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition-colors">
-                <UserIcon />
+              <span className="text-xs text-[#889A68]" style={{ fontFamily: "'QF', system-ui, sans-serif" }}>Data Range:</span>
+              <button className="flex items-center gap-2 px-3 py-1.5 bg-white border border-[#E8E8E5] rounded-md text-xs text-[#11362A]">
+                <CalendarIcon />
+                <span>Jun 01 - 27, 2025</span>
               </button>
             </div>
           </div>
@@ -590,7 +594,13 @@
                         opacity: hovered !== null && hovered !== i ? 0.4 : 1
                       }}
                     >
-                      <span className="text-white text-xs font-medium">
+                      <span
+                        className="text-xs font-medium px-1.5 py-0.5 rounded"
+                        style={{
+                          backgroundColor: 'rgba(255,255,255,0.9)',
+                          color: '#11362A'
+                        }}
+                      >
                         {(item.value / 1000).toFixed(0)}K
                       </span>
                     </div>
@@ -868,11 +878,15 @@
       ];
 
       return (
-        <div className="min-h-screen bg-[#F5F5F3]" style={{ fontFamily: "'QF', system-ui, -apple-system, sans-serif" }}>
+        <div className="min-h-screen bg-white" style={{ fontFamily: "'QF', system-ui, -apple-system, sans-serif" }}>
           <TopNavBar />
-          <SubNavigation />
 
           <main className="p-6 space-y-6">
+            {/* Page Title */}
+            <h1 className="text-5xl font-medium text-[#11362A] pt-[30px]" style={{ letterSpacing: '-0.02em' }}>
+              Social Media Analytics
+            </h1>
+
             {/* Stat Cards Row */}
             <div className="grid grid-cols-5 gap-4">
               {stats.map((stat, i) => (

@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Digital Media Analytics — Communications Dashboard</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- React & ReactDOM -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+
+  <!-- Babel for JSX -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    @font-face {
+      font-family: 'QF';
+      src: url('QF-VF.woff2') format('woff2');
+      font-weight: 100 900;
+      font-style: normal;
+      font-display: swap;
+    }
+    html { scroll-behavior: smooth; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState } = React;
+
+    // =============================================================================
+    // COMMUNICATIONS DASHBOARD — DIGITAL MEDIA ANALYTICS
+    // =============================================================================
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // IBM CARBON ICONS
+    // ─────────────────────────────────────────────────────────────────────────────
+
+    const CalendarIcon = () => (
+      <svg width="16" height="16" viewBox="0 0 32 32" fill="currentColor">
+        <path d="M26,4H22V2H20V4H12V2H10V4H6A2,2,0,0,0,4,6V26a2,2,0,0,0,2,2H26a2,2,0,0,0,2-2V6A2,2,0,0,0,26,4Zm0,22H6V12H26Zm0-16H6V6H10V8h2V6h8V8h2V6h4Z"/>
+      </svg>
+    );
+
+    const ChevronDownIcon = () => (
+      <svg width="16" height="16" viewBox="0 0 32 32" fill="currentColor">
+        <polygon points="16 22 6 12 7.4 10.6 16 19.2 24.6 10.6 26 12 16 22"/>
+      </svg>
+    );
+
+    const UserIcon = () => (
+      <svg width="20" height="20" viewBox="0 0 32 32" fill="currentColor">
+        <path d="M16,4A5,5,0,1,1,11,9,5,5,0,0,1,16,4m0-2a7,7,0,1,0,7,7A7,7,0,0,0,16,2Z"/>
+        <path d="M26,30H24V25a5,5,0,0,0-5-5H13a5,5,0,0,0-5,5v5H6V25a7,7,0,0,1,7-7h6a7,7,0,0,1,7,7Z"/>
+      </svg>
+    );
+
+    const TrendUpIcon = ({ color, down }) => (
+      <svg width="16" height="16" viewBox="0 0 32 32" fill={color} style={{ transform: down ? 'rotate(180deg)' : 'none' }}>
+        <path d="M20,8v2h6.5859L18,18.5859,13.707,14.293a.9994.9994,0,0,0-1.414,0L2,24.5859,3.4141,26,13,16.4141l4.293,4.2929a.9994.9994,0,0,0,1.414,0L28,11.4141V18h2V8Z"/>
+      </svg>
+    );
+
+    const GroupIcon = () => (
+      <svg width="16" height="16" viewBox="0 0 32 32" fill="#11362A">
+        <path d="M31,30H29V27a3,3,0,0,0-3-3H22a3,3,0,0,0-3,3v3H17V27a5,5,0,0,1,5-5h4a5,5,0,0,1,5,5Z"/>
+        <path d="M24,12a3,3,0,1,1-3,3,3,3,0,0,1,3-3m0-2a5,5,0,1,0,5,5A5,5,0,0,0,24,10Z"/>
+        <path d="M15,22H13V19a3,3,0,0,0-3-3H6a3,3,0,0,0-3,3v3H1V19a5,5,0,0,1,5-5h4a5,5,0,0,1,5,5Z"/>
+        <path d="M8,4A3,3,0,1,1,5,7,3,3,0,0,1,8,4M8,2a5,5,0,1,0,5,5A5,5,0,0,0,8,2Z"/>
+      </svg>
+    );
+
+    const PageviewsIcon = () => (
+      <svg width="16" height="16" viewBox="0 0 32 32" fill="#889A68">
+        <path d="M30.94,15.66A16.69,16.69,0,0,0,16,6,16.69,16.69,0,0,0,1.06,15.66a1,1,0,0,0,0,.68A16.69,16.69,0,0,0,16,26,16.69,16.69,0,0,0,30.94,16.34,1,1,0,0,0,30.94,15.66ZM16,24c-5.3,0-10.9-3.93-12.93-8C5.1,11.93,10.7,8,16,8s10.9,3.93,12.93,8C26.9,20.07,21.3,24,16,24Z"/>
+        <path d="M16,10a6,6,0,1,0,6,6A6,6,0,0,0,16,10Zm0,10a4,4,0,1,1,4-4A4,4,0,0,1,16,20Z"/>
+      </svg>
+    );
+
+    const UsersIcon = () => (
+      <svg width="16" height="16" viewBox="0 0 32 32" fill="#889A68">
+        <path d="M30,30H28V25a5,5,0,0,0-5-5V18a7,7,0,0,1,7,7Z"/>
+        <path d="M22,30H20V25a5,5,0,0,0-5-5H9a5,5,0,0,0-5,5v5H2V25a7,7,0,0,1,7-7h6a7,7,0,0,1,7,7Z"/>
+        <path d="M20,2V4a5,5,0,0,1,0,10v2A7,7,0,0,0,20,2Z"/>
+        <path d="M12,4A5,5,0,1,1,7,9a5,5,0,0,1,5-5m0-2a7,7,0,1,0,7,7A7,7,0,0,0,12,2Z"/>
+      </svg>
+    );
+
+    const DocumentIcon = () => (
+      <svg width="16" height="16" viewBox="0 0 32 32" fill="#889A68">
+        <path d="M25.7,9.3l-7-7A.91.91,0,0,0,18,2H8A2,2,0,0,0,6,4V28a2,2,0,0,0,2,2H24a2,2,0,0,0,2-2V10A.91.91,0,0,0,25.7,9.3ZM18,4.4,23.6,10H18ZM24,28H8V4h8v6a2,2,0,0,0,2,2h6Z"/>
+        <rect x="10" y="22" width="12" height="2"/>
+        <rect x="10" y="16" width="12" height="2"/>
+      </svg>
+    );
+
+    const DownloadIcon = () => (
+      <svg width="16" height="16" viewBox="0 0 32 32" fill="#889A68">
+        <path d="M26,24v4H6V24H4v4a2,2,0,0,0,2,2H26a2,2,0,0,0,2-2V24Z"/>
+        <polygon points="26 14 24.59 12.59 17 20.17 17 2 15 2 15 20.17 7.41 12.59 6 14 16 24 26 14"/>
+      </svg>
+    );
+
+    const ChatBotIcon = () => (
+      <svg width="16" height="16" viewBox="0 0 32 32" fill="#889A68">
+        <path d="M16,19a6.9908,6.9908,0,0,1-5.833-3.1287l1.666-1.1074a5.0007,5.0007,0,0,0,8.334,0l1.666,1.1074A6.9908,6.9908,0,0,1,16,19Z"/>
+        <path d="M20,8a2,2,0,1,0,2,2A1.9806,1.9806,0,0,0,20,8Z"/>
+        <path d="M12,8a2,2,0,1,0,2,2A1.9806,1.9806,0,0,0,12,8Z"/>
+        <path d="M17.7358,30,16,29l4-7h6a1.9966,1.9966,0,0,0,2-2V6a1.9966,1.9966,0,0,0-2-2H6A1.9966,1.9966,0,0,0,4,6V20a1.9966,1.9966,0,0,0,2,2h9v2H6a3.9993,3.9993,0,0,1-4-4V6A3.9988,3.9988,0,0,1,6,2H26a3.9988,3.9988,0,0,1,4,4V20a3.9993,3.9993,0,0,1-4,4H21.1646Z"/>
+      </svg>
+    );
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // HELPER COMPONENTS
+    // ─────────────────────────────────────────────────────────────────────────────
+
+    const Tooltip = ({ children, visible, position = 'top' }) => {
+      if (!visible) return null;
+      const positions = {
+        top: 'bottom-full left-1/2 -translate-x-1/2 mb-2',
+        center: 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2',
+        right: 'left-full top-1/2 -translate-y-1/2 ml-2',
+      };
+      return (
+        <div className={`absolute ${positions[position]} bg-white border border-[#E8E8E5] rounded-lg shadow-lg px-4 py-3 pointer-events-none z-20 whitespace-nowrap`}>
+          {children}
+        </div>
+      );
+    };
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // NAVIGATION COMPONENTS
+    // ─────────────────────────────────────────────────────────────────────────────
+
+    const TopNavBar = () => {
+      const tabs = [
+        { id: 'overview', label: 'Overview', href: '#' },
+        { id: 'social', label: 'Social Media', href: 'dashboard.html' },
+        { id: 'digital', label: 'Digital Media', href: 'digital-dashboard.html' },
+      ];
+
+      const currentTab = 'digital';
+
+      return (
+        <header className="bg-[#FAFAF9] border-b border-[#E8E8E5]">
+          <div className="px-6 py-4 flex items-center justify-between">
+            <div className="flex items-center gap-8">
+              <h1 className="text-base font-medium text-[#11362A]" style={{ fontFamily: "'QF', system-ui, sans-serif" }}>
+                Communications Dashboard
+              </h1>
+              <nav className="flex gap-1">
+                {tabs.map(tab => (
+                  <a
+                    key={tab.id}
+                    href={tab.href}
+                    className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                      currentTab === tab.id
+                        ? 'bg-[#11362A] text-white'
+                        : 'text-[#11362A] hover:bg-[#E8E8E5]'
+                    }`}
+                    style={{ fontFamily: "'QF', system-ui, sans-serif" }}
+                  >
+                    {tab.label}
+                  </a>
+                ))}
+              </nav>
+            </div>
+            <div className="flex items-center gap-4">
+              <span className="text-xs text-[#889A68]" style={{ fontFamily: "'QF', system-ui, sans-serif" }}>Data Range:</span>
+              <button className="flex items-center gap-2 px-3 py-1.5 bg-white border border-[#E8E8E5] rounded-md text-xs text-[#11362A]">
+                <CalendarIcon />
+                <span>Jun 01 - 27, 2025</span>
+              </button>
+            </div>
+          </div>
+        </header>
+      );
+    };
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // STAT CARD COMPONENTS
+    // ─────────────────────────────────────────────────────────────────────────────
+
+    // Main stat card (green background)
+    const StatCardPrimary = ({ title, value, breakdown }) => {
+      return (
+        <div className="bg-[#F4F6F0] rounded-xl p-5 border border-[#E8E8E5] flex flex-col h-full" style={{ fontFamily: "'QF', system-ui, sans-serif", fontWeight: 500 }}>
+          <div className="mb-3">
+            <h3 className="text-sm text-[#11362A] leading-tight">{title}</h3>
+          </div>
+          <div className="mt-auto">
+            <p className="text-4xl text-[#11362A] mb-2" style={{ letterSpacing: '-0.02em', fontWeight: 500 }}>
+              {typeof value === 'number' ? value.toLocaleString() : value}
+            </p>
+            {breakdown && (
+              <p className="text-xs text-[#889A68]" style={{ fontWeight: 400 }}>
+                {breakdown}
+              </p>
+            )}
+          </div>
+        </div>
+      );
+    };
+
+    // Secondary stat card (white background with border)
+    const StatCardSecondary = ({ title, value, trend, trendLabel = "vs last period", description }) => {
+      const isPositive = trend >= 0;
+      const trendColor = isPositive ? '#385C4B' : '#C4A0A0';
+
+      return (
+        <div className="bg-white rounded-xl p-5 border border-[#E8E8E5] flex flex-col h-full" style={{ fontFamily: "'QF', system-ui, sans-serif", fontWeight: 500 }}>
+          <h3 className="text-base text-[#11362A] mb-4">{title}</h3>
+          <div className="mt-auto">
+            <p className="text-4xl text-[#11362A] mb-2" style={{ letterSpacing: '-0.02em', fontWeight: 500 }}>
+              {typeof value === 'number' ? value.toLocaleString() : value}
+            </p>
+            {trend !== undefined && (
+              <div className="flex items-center gap-1.5 mb-2">
+                <TrendUpIcon color={trendColor} down={!isPositive} />
+                <span className="text-sm text-[#737370]" style={{ fontWeight: 400 }}>
+                  {isPositive ? '+' : ''}{trend}% {trendLabel}
+                </span>
+              </div>
+            )}
+            {description && (
+              <p className="text-sm text-[#737370]" style={{ fontWeight: 400 }}>{description}</p>
+            )}
+          </div>
+        </div>
+      );
+    };
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // TAB COMPONENTS
+    // ─────────────────────────────────────────────────────────────────────────────
+
+    const PlatformTabs = ({ active, onChange }) => {
+      const tabs = [
+        { id: 'qf', label: 'QF Website' },
+        { id: 'ec', label: 'EC Platform' },
+        { id: 'maktabi', label: 'Maktabi' },
+      ];
+
+      return (
+        <div className="flex gap-2">
+          {tabs.map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => onChange(tab.id)}
+              className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                active === tab.id
+                  ? 'bg-[#11362A] text-white'
+                  : 'border border-[#11362A] text-[#11362A] hover:bg-[#F5F5F3]'
+              }`}
+              style={{ fontFamily: "'QF', system-ui, sans-serif" }}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      );
+    };
+
+    const AnalyticsTabs = ({ active, onChange }) => {
+      const tabs = [
+        { id: 'traffic', label: 'Traffic & Sources' },
+        { id: 'audience', label: 'Audience Insights' },
+        { id: 'content', label: 'Content Performance' },
+        { id: 'organic', label: 'Organic Search' },
+      ];
+
+      return (
+        <div className="flex bg-[#FAFAF9] rounded-xl p-1 w-full">
+          {tabs.map(tab => (
+            <button
+              key={tab.id}
+              onClick={() => onChange(tab.id)}
+              className={`flex-1 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors ${
+                active === tab.id
+                  ? 'bg-[#E8E8E5] text-[#11362A]'
+                  : 'text-[#11362A] hover:bg-[#E8E8E5]/50'
+              }`}
+              style={{ fontFamily: "'QF', system-ui, sans-serif" }}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
+      );
+    };
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // CHART COMPONENTS
+    // ─────────────────────────────────────────────────────────────────────────────
+
+    // Demographics: Age & Gender Chart
+    const DemographicsChart = () => {
+      const [hovered, setHovered] = useState(null);
+
+      const data = [
+        { age: '18-24', male: 22, female: 28 },
+        { age: '25-34', male: 32, female: 35 },
+        { age: '35-44', male: 18, female: 14 },
+        { age: '45-54', male: 12, female: 8 },
+        { age: '65+', male: 8, female: 6 },
+      ];
+
+      const maxValue = 40;
+      const chartHeight = 200;
+
+      return (
+        <div>
+          <div className="flex gap-6 text-xs mb-4">
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded" style={{ backgroundColor: '#11362A' }} />
+              <span className="text-[#4A7561]">Male</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-3 h-3 rounded" style={{ backgroundColor: '#889A68' }} />
+              <span className="text-[#4A7561]">Female</span>
+            </div>
+          </div>
+
+          <div className="flex">
+            <div className="flex flex-col justify-between text-xs text-[#4A7561] pr-3 w-8" style={{ height: `${chartHeight}px` }}>
+              <span>40</span><span>30</span><span>20</span><span>10</span><span>0</span>
+            </div>
+
+            <div className="flex-1 relative">
+              <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
+                {[0,1,2,3,4].map(i => <div key={i} className="border-t border-dashed border-[#E8E8E5]" />)}
+              </div>
+
+              <div className="flex items-end gap-6 relative" style={{ height: `${chartHeight}px` }}>
+                {data.map((item, i) => (
+                  <div
+                    key={i}
+                    className="flex-1 flex gap-1 items-end cursor-pointer"
+                    onMouseEnter={() => setHovered(i)}
+                    onMouseLeave={() => setHovered(null)}
+                  >
+                    <div
+                      className="flex-1 rounded-t transition-all duration-200"
+                      style={{
+                        height: `${(item.male / maxValue) * chartHeight}px`,
+                        backgroundColor: '#11362A',
+                        opacity: hovered !== null && hovered !== i ? 0.4 : 1
+                      }}
+                    />
+                    <div
+                      className="flex-1 rounded-t transition-all duration-200"
+                      style={{
+                        height: `${(item.female / maxValue) * chartHeight}px`,
+                        backgroundColor: '#889A68',
+                        opacity: hovered !== null && hovered !== i ? 0.4 : 1
+                      }}
+                    />
+                    <Tooltip visible={hovered === i} position="top">
+                      <p className="text-sm font-medium text-[#0B241C] mb-1">{item.age}</p>
+                      <p className="text-xs text-[#11362A]">Male: {item.male}%</p>
+                      <p className="text-xs text-[#889A68]">Female: {item.female}%</p>
+                    </Tooltip>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex gap-6 ml-8 mt-2">
+            {data.map((item, i) => (
+              <div key={i} className="flex-1 text-center">
+                <span className="text-xs text-[#4A7561]">{item.age}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    };
+
+    // Interests Segmentation Chart
+    const InterestsChart = () => {
+      const data = [
+        { label: 'Education & Learning', value: 78 },
+        { label: 'Research & Innovation', value: 65 },
+        { label: 'Science & Technology', value: 58 },
+        { label: 'Culture & Arts', value: 42 },
+        { label: 'Sustainability', value: 30 },
+      ];
+
+      return (
+        <div className="space-y-4">
+          {data.map((item, i) => (
+            <div key={i} className="space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-xs text-[#0B241C]">{item.label}</span>
+                <span className="text-sm font-medium text-[#0B241C]">{item.value}%</span>
+              </div>
+              <div className="w-full h-2 bg-[#E8E8E5] rounded-full overflow-hidden">
+                <div
+                  className="h-full rounded-full transition-all duration-500"
+                  style={{ width: `${item.value}%`, backgroundColor: '#11362A' }}
+                />
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+    };
+
+    // Device Usage Donut Chart
+    const DeviceDonutChart = () => {
+      const data = [
+        { name: 'Desktop', percent: 57, color: '#11362A' },
+        { name: 'Mobile', percent: 36, color: '#889A68' },
+        { name: 'Tablet', percent: 7, color: '#BDC8AB' },
+      ];
+
+      let cumulativePercent = 0;
+      const segments = data.map(d => {
+        const segment = { ...d, offset: cumulativePercent };
+        cumulativePercent += d.percent;
+        return segment;
+      });
+
+      return (
+        <div className="flex items-center gap-6">
+          <svg viewBox="0 0 120 120" className="w-32 h-32">
+            {segments.map((segment, i) => {
+              const circumference = 2 * Math.PI * 45;
+              const strokeDash = (segment.percent / 100) * circumference;
+              const strokeOffset = -(segment.offset / 100) * circumference;
+
+              return (
+                <circle
+                  key={i}
+                  cx="60" cy="60" r="45"
+                  fill="none"
+                  stroke={segment.color}
+                  strokeWidth="20"
+                  strokeDasharray={`${strokeDash} ${circumference}`}
+                  strokeDashoffset={strokeOffset}
+                  transform="rotate(-90 60 60)"
+                  className="transition-opacity duration-200"
+                />
+              );
+            })}
+          </svg>
+          <div className="space-y-2">
+            {data.map((item, i) => (
+              <div key={i} className="flex items-center gap-2 text-sm">
+                <div className="w-3 h-3 rounded" style={{ backgroundColor: item.color }} />
+                <span className="text-[#0B241C]">{item.name}:</span>
+                <span className="font-medium text-[#0B241C]">{item.percent}%</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    };
+
+    // Top Countries List
+    const TopCountries = () => {
+      const countries = [
+        { name: 'Qatar', users: '640,000', percent: 45 },
+        { name: 'United States', users: '256,000', percent: 18 },
+        { name: 'United Kingdom', users: '144,000', percent: 12 },
+        { name: 'UAE', users: '96,000', percent: 8 },
+        { name: 'Saudi Arabia', users: '84,000', percent: 7 },
+      ];
+
+      return (
+        <div className="space-y-3">
+          {countries.map((country, i) => (
+            <div key={i} className="flex items-center justify-between text-sm">
+              <span className="text-[#0B241C]">{country.name}</span>
+              <div className="flex items-center gap-3">
+                <span className="text-[#737370]">{country.users} users</span>
+                <span className="font-medium text-[#0B241C] w-10 text-right">{country.percent}%</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      );
+    };
+
+    // New vs Returning Visitors Trend Chart
+    const VisitorsTrendChart = () => {
+      const [hovered, setHovered] = useState(null);
+
+      const data = [
+        { month: 'Jan', new: 85000, returning: 42000 },
+        { month: 'Feb', new: 92000, returning: 45000 },
+        { month: 'Mar', new: 88000, returning: 48000 },
+        { month: 'Apr', new: 95000, returning: 50000 },
+        { month: 'May', new: 105000, returning: 52000 },
+        { month: 'Jun', new: 110000, returning: 55000 },
+      ];
+
+      const maxValue = 120000;
+      const chartHeight = 200;
+      const chartWidth = 500;
+
+      const getY = (value) => chartHeight - (value / maxValue) * chartHeight;
+      const getX = (index) => (index / (data.length - 1)) * chartWidth;
+
+      const newPath = data.map((d, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getY(d.new)}`).join(' ');
+      const returningPath = data.map((d, i) => `${i === 0 ? 'M' : 'L'} ${getX(i)} ${getY(d.returning)}`).join(' ');
+
+      return (
+        <div>
+          <div className="flex gap-6 text-xs mb-4">
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-0.5" style={{ backgroundColor: '#11362A' }} />
+              <span className="text-[#4A7561]">New Visitors</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="w-4 h-0.5" style={{ backgroundColor: '#889A68' }} />
+              <span className="text-[#4A7561]">Returning Visitors</span>
+            </div>
+          </div>
+
+          <div className="flex">
+            <div className="flex flex-col justify-between text-xs text-[#4A7561] pr-3 w-12 text-right" style={{ height: `${chartHeight}px` }}>
+              <span>120K</span><span>90K</span><span>60K</span><span>30K</span><span>0</span>
+            </div>
+
+            <div className="flex-1 relative" style={{ height: `${chartHeight}px` }}>
+              <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
+                {[0,1,2,3,4].map(i => <div key={i} className="border-t border-dashed border-[#E8E8E5]" />)}
+              </div>
+
+              <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="w-full h-full overflow-visible">
+                <path d={newPath} fill="none" stroke="#11362A" strokeWidth="2" />
+                <path d={returningPath} fill="none" stroke="#889A68" strokeWidth="2" />
+
+                {data.map((d, i) => (
+                  <g key={i}>
+                    <circle
+                      cx={getX(i)} cy={getY(d.new)} r="5"
+                      fill="white" stroke="#11362A" strokeWidth="2"
+                      className="cursor-pointer"
+                      onMouseEnter={() => setHovered(i)}
+                      onMouseLeave={() => setHovered(null)}
+                    />
+                    <circle
+                      cx={getX(i)} cy={getY(d.returning)} r="5"
+                      fill="white" stroke="#889A68" strokeWidth="2"
+                      className="cursor-pointer"
+                      onMouseEnter={() => setHovered(i)}
+                      onMouseLeave={() => setHovered(null)}
+                    />
+                  </g>
+                ))}
+              </svg>
+
+              {hovered !== null && (
+                <div
+                  className="absolute bg-white border border-[#E8E8E5] rounded-lg shadow-lg px-4 py-3 pointer-events-none z-20"
+                  style={{ left: `${(hovered / (data.length - 1)) * 100}%`, top: '20%', transform: 'translateX(-50%)' }}
+                >
+                  <p className="text-sm font-medium text-[#0B241C] mb-2">{data[hovered].month}</p>
+                  <p className="text-xs text-[#11362A]">New: {(data[hovered].new / 1000).toFixed(0)}K</p>
+                  <p className="text-xs text-[#889A68]">Returning: {(data[hovered].returning / 1000).toFixed(0)}K</p>
+                </div>
+              )}
+            </div>
+          </div>
+
+          <div className="flex ml-12 mt-3">
+            {data.map((d, i) => (
+              <div key={i} className="flex-1 text-center">
+                <span className="text-xs text-[#4A7561]">{d.month}</span>
+              </div>
+            ))}
+          </div>
+
+          <div className="text-center mt-6">
+            <p className="text-3xl font-medium text-[#0B241C]">68% / 32%</p>
+            <p className="text-sm text-[#4A7561] mt-1">New vs Returning Visitors</p>
+          </div>
+        </div>
+      );
+    };
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // CARD WRAPPER
+    // ─────────────────────────────────────────────────────────────────────────────
+
+    const ChartCard = ({ title, children, className = '' }) => (
+      <div className={`bg-white rounded-xl border border-[#E8E8E5] p-5 ${className}`}>
+        <h3 className="text-sm font-medium text-[#0B241C] mb-5">{title}</h3>
+        {children}
+      </div>
+    );
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // MAIN APP
+    // ─────────────────────────────────────────────────────────────────────────────
+
+    function DigitalDashboard() {
+      const [activePlatform, setActivePlatform] = useState('qf');
+      const [activeAnalyticsTab, setActiveAnalyticsTab] = useState('audience');
+
+      const topStats = [
+        { title: 'Total Pageviews Across Digital Platforms', value: '2.8M', breakdown: 'QF Web: 1.2M | EC Web: 890K | EC App: 167K | Maktabi: 08' },
+        { title: 'Total Active Users Across Digital Platforms', value: '485K', breakdown: 'QF Web: 168K | EC Web: 165K | EC App: 148K | Maktabi: 04' },
+        { title: 'Total Pages Created/Updated Across Digital Platforms', value: '150', breakdown: 'QF Web: 85 | EC Web and App: 47 | Maktabi: 08' },
+        { title: 'Total New EC App Installs', value: '3,247', breakdown: 'iOS: 1,852 | Android: 1,395' },
+        { title: 'Total Botaina Engagement', value: '8,467', breakdown: 'QF Website: 5,421 | Maktabi: 3,046' },
+      ];
+
+      const digitalStats = [
+        { title: 'Total Posts', value: 481, trend: -3, description: 'Total number of page views' },
+        { title: 'Total Views', value: '2.8M', trend: 15.3, description: 'Total number of page views' },
+        { title: 'Avg. Session Duration', value: '5m 42s', trend: 8.2, description: 'Total number of page views' },
+        { title: 'Engagement Rate', value: '6.8%', trend: 0.4, description: 'Total number of page views' },
+      ];
+
+      return (
+        <div className="min-h-screen bg-white" style={{ fontFamily: "'QF', system-ui, -apple-system, sans-serif" }}>
+          <TopNavBar />
+
+          <main className="p-6 space-y-6">
+            {/* Page Title */}
+            <h1 className="text-5xl font-medium text-[#11362A] pt-[30px]" style={{ letterSpacing: '-0.02em' }}>
+              Digital Media Analytics
+            </h1>
+
+            {/* Top Stats Row (5 cards - green background) */}
+            <div className="grid grid-cols-5 gap-4">
+              {topStats.map((stat, i) => (
+                <StatCardPrimary key={i} {...stat} />
+              ))}
+            </div>
+
+            {/* Digital Analytics Section Header */}
+            <div className="flex items-end justify-between pt-6">
+              <h2 className="text-2xl font-medium text-[#11362A]">Digital Analytics</h2>
+              <PlatformTabs active={activePlatform} onChange={setActivePlatform} />
+            </div>
+
+            {/* Secondary Stats Row (4 cards - white background) */}
+            <div className="grid grid-cols-4 gap-4">
+              {digitalStats.map((stat, i) => (
+                <StatCardSecondary key={i} {...stat} />
+              ))}
+            </div>
+
+            {/* Analytics Tabs */}
+            <AnalyticsTabs active={activeAnalyticsTab} onChange={setActiveAnalyticsTab} />
+
+            {/* Charts Grid - Row 1 */}
+            <div className="grid grid-cols-2 gap-5">
+              <ChartCard title="Demographics: Age & Gender">
+                <DemographicsChart />
+              </ChartCard>
+              <ChartCard title="Interests Segmentation">
+                <InterestsChart />
+              </ChartCard>
+            </div>
+
+            {/* Charts Grid - Row 2 */}
+            <div className="grid grid-cols-2 gap-5">
+              <ChartCard title="Device & Geography Breakdown">
+                <div className="space-y-6">
+                  <div>
+                    <p className="text-xs text-[#737370] mb-4">Device Usage</p>
+                    <DeviceDonutChart />
+                  </div>
+                  <div>
+                    <p className="text-xs text-[#737370] mb-4">Top 5 Countries</p>
+                    <TopCountries />
+                  </div>
+                </div>
+              </ChartCard>
+              <ChartCard title="New vs Returning Visitors Trend">
+                <VisitorsTrendChart />
+              </ChartCard>
+            </div>
+          </main>
+
+          {/* Footer */}
+          <footer className="px-6 py-4 text-center text-xs text-[#4A7561] border-t border-[#E8E8E5] bg-white">
+            QF Communications Dashboard v1.0 — Built with QF Design System
+          </footer>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<DigitalDashboard />);
+  </script>
+</body>
+</html>
