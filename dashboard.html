@@ -16,6 +16,13 @@
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
 
   <style>
+    @font-face {
+      font-family: 'QF';
+      src: url('QF-VF.woff2') format('woff2');
+      font-weight: 100 900;
+      font-style: normal;
+      font-display: swap;
+    }
     html { scroll-behavior: smooth; }
   </style>
 </head>
@@ -292,13 +299,13 @@
       );
 
       return (
-        <div className="bg-[#F4F6F0] rounded-xl p-5 border border-[#E8E8E5] flex flex-col h-full">
+        <div className="bg-[#F4F6F0] rounded-xl p-5 border border-[#E8E8E5] flex flex-col h-full" style={{ fontFamily: "'QF', system-ui, sans-serif", fontWeight: 500 }}>
           <div className="flex items-start justify-between mb-3">
-            <h3 className="text-sm font-medium text-[#4A7561] leading-tight">{title}</h3>
+            <h3 className="text-sm text-[#4A7561] leading-tight">{title}</h3>
             {icon || <GroupIcon />}
           </div>
           <div className="mt-auto">
-            <p className="text-3xl font-light text-[#0B241C] mb-2" style={{ letterSpacing: '-0.02em' }}>
+            <p className="text-3xl text-[#0B241C] mb-2" style={{ letterSpacing: '-0.02em', fontWeight: 500 }}>
               {typeof value === 'number' ? value.toLocaleString() : value}
             </p>
             {trend !== undefined && (
@@ -861,7 +868,7 @@
       ];
 
       return (
-        <div className="min-h-screen bg-[#F5F5F3]" style={{ fontFamily: "system-ui, -apple-system, sans-serif" }}>
+        <div className="min-h-screen bg-[#F5F5F3]" style={{ fontFamily: "'QF', system-ui, -apple-system, sans-serif" }}>
           <TopNavBar />
           <SubNavigation />
 
