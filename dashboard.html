@@ -1,0 +1,924 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Social Media Analytics — Communications Dashboard</title>
+
+  <!-- Tailwind CSS -->
+  <script src="https://cdn.tailwindcss.com"></script>
+
+  <!-- React & ReactDOM -->
+  <script src="https://unpkg.com/react@18/umd/react.development.js" crossorigin></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js" crossorigin></script>
+
+  <!-- Babel for JSX -->
+  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+
+  <style>
+    html { scroll-behavior: smooth; }
+  </style>
+</head>
+<body>
+  <div id="root"></div>
+
+  <script type="text/babel">
+    const { useState } = React;
+
+    // =============================================================================
+    // COMMUNICATIONS DASHBOARD — SOCIAL MEDIA ANALYTICS
+    // =============================================================================
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // IBM CARBON ICONS
+    // ─────────────────────────────────────────────────────────────────────────────
+
+    const CalendarIcon = () => (
+      <svg width="16" height="16" viewBox="0 0 32 32" fill="currentColor">
+        <path d="M26,4H22V2H20V4H12V2H10V4H6A2,2,0,0,0,4,6V26a2,2,0,0,0,2,2H26a2,2,0,0,0,2-2V6A2,2,0,0,0,26,4Zm0,22H6V12H26Zm0-16H6V6H10V8h2V6h8V8h2V6h4Z"/>
+      </svg>
+    );
+
+    const ChevronDownIcon = () => (
+      <svg width="16" height="16" viewBox="0 0 32 32" fill="currentColor">
+        <polygon points="16 22 6 12 7.4 10.6 16 19.2 24.6 10.6 26 12 16 22"/>
+      </svg>
+    );
+
+    const UserIcon = () => (
+      <svg width="20" height="20" viewBox="0 0 32 32" fill="currentColor">
+        <path d="M16,4A5,5,0,1,1,11,9,5,5,0,0,1,16,4m0-2a7,7,0,1,0,7,7A7,7,0,0,0,16,2Z"/>
+        <path d="M26,30H24V25a5,5,0,0,0-5-5H13a5,5,0,0,0-5,5v5H6V25a7,7,0,0,1,7-7h6a7,7,0,0,1,7,7Z"/>
+      </svg>
+    );
+
+    const TrendUpIcon = ({ color }) => (
+      <svg width="16" height="16" viewBox="0 0 32 32" fill={color}>
+        <path d="M20,8v2h6.5859L18,18.5859,13.707,14.293a.9994.9994,0,0,0-1.414,0L2,24.5859,3.4141,26,13,16.4141l4.293,4.2929a.9994.9994,0,0,0,1.414,0L28,11.4141V18h2V8Z"/>
+      </svg>
+    );
+
+    const ImageIcon = () => (
+      <svg width="20" height="20" viewBox="0 0 32 32" fill="currentColor">
+        <path d="M19,14a3,3,0,1,0-3-3A3,3,0,0,0,19,14Zm0-4a1,1,0,1,1-1,1A1,1,0,0,1,19,10Z"/>
+        <path d="M26,4H6A2,2,0,0,0,4,6V26a2,2,0,0,0,2,2H26a2,2,0,0,0,2-2V6A2,2,0,0,0,26,4Zm0,22H6V20l5-5,5.59,5.59a2,2,0,0,0,2.82,0L21,19l5,5Zm0-4.83-3.59-3.59a2,2,0,0,0-2.82,0L18,19.17l-5.59-5.59a2,2,0,0,0-2.82,0L6,17.17V6H26Z"/>
+      </svg>
+    );
+
+    const HeartIcon = () => (
+      <svg width="12" height="12" viewBox="0 0 32 32" fill="white">
+        <path d="M22.5,4c-2,0-3.9,0.8-5.3,2.2L16,7.4l-1.1-1.1C12,3.3,7.2,3.3,4.3,6.2c0,0-0.1,0.1-0.1,0.1c-3,3-3,7.8,0,10.8L16,29l11.8-11.9c3-3,3-7.8,0-10.8C26.4,4.8,24.5,4,22.5,4z"/>
+      </svg>
+    );
+
+    const ChatIcon = () => (
+      <svg width="12" height="12" viewBox="0 0 32 32" fill="white">
+        <path d="M17.74,30,16,29l4-7h6a2,2,0,0,0,2-2V8a2,2,0,0,0-2-2H6A2,2,0,0,0,4,8V20a2,2,0,0,0,2,2h9v2H6a4,4,0,0,1-4-4V8A4,4,0,0,1,6,4H26a4,4,0,0,1,4,4V20a4,4,0,0,1-4,4H21.16Z"/>
+        <rect x="8" y="10" width="16" height="2"/>
+        <rect x="8" y="16" width="10" height="2"/>
+      </svg>
+    );
+
+    const ShareIcon = () => (
+      <svg width="12" height="12" viewBox="0 0 32 32" fill="white">
+        <path d="M23,20a5,5,0,0,0-3.89,1.89L11.8,17.32a4.46,4.46,0,0,0,0-2.64l7.31-4.57A5,5,0,1,0,18,7a4.79,4.79,0,0,0,.2,1.32l-7.31,4.57a5,5,0,1,0,0,6.22l7.31,4.57A4.79,4.79,0,0,0,18,25a5,5,0,1,0,5-5ZM23,4a3,3,0,1,1-3,3A3,3,0,0,1,23,4ZM7,19a3,3,0,1,1,3-3A3,3,0,0,1,7,19Zm16,9a3,3,0,1,1,3-3A3,3,0,0,1,23,28Z"/>
+      </svg>
+    );
+
+    const ChevronLeftIcon = () => (
+      <svg width="16" height="16" viewBox="0 0 32 32" fill="currentColor">
+        <polygon points="10 16 20 6 21.4 7.4 12.8 16 21.4 24.6 20 26 10 16"/>
+      </svg>
+    );
+
+    const ChevronRightIcon = () => (
+      <svg width="16" height="16" viewBox="0 0 32 32" fill="currentColor">
+        <polygon points="22 16 12 26 10.6 24.6 19.2 16 10.6 7.4 12 6 22 16"/>
+      </svg>
+    );
+
+    // Platform logo icons
+    const PlatformIcons = {
+      instagram: (
+        <svg width="16" height="16" viewBox="0 0 32 32" fill="white">
+          <path d="M16,3.9c3.2,0,3.6,0,4.9,0.1c1.2,0.1,1.8,0.2,2.3,0.4c0.6,0.2,1,0.5,1.4,0.9c0.4,0.4,0.7,0.9,0.9,1.4
+            c0.2,0.5,0.4,1.1,0.4,2.3c0.1,1.3,0.1,1.6,0.1,4.9s0,3.6-0.1,4.9c-0.1,1.2-0.2,1.8-0.4,2.3c-0.2,0.6-0.5,1-0.9,1.4
+            c-0.4,0.4-0.9,0.7-1.4,0.9c-0.5,0.2-1.1,0.4-2.3,0.4c-1.3,0.1-1.6,0.1-4.9,0.1s-3.6,0-4.9-0.1c-1.2-0.1-1.8-0.2-2.3-0.4
+            c-0.6-0.2-1-0.5-1.4-0.9c-0.4-0.4-0.7-0.9-0.9-1.4c-0.2-0.5-0.4-1.1-0.4-2.3c-0.1-1.3-0.1-1.6-0.1-4.9s0-3.6,0.1-4.9
+            c0.1-1.2,0.2-1.8,0.4-2.3c0.2-0.6,0.5-1,0.9-1.4c0.4-0.4,0.9-0.7,1.4-0.9c0.5-0.2,1.1-0.4,2.3-0.4C12.4,3.9,12.8,3.9,16,3.9
+            M16,2c-3.3,0-3.7,0-4.9,0.1c-1.3,0.1-2.2,0.2-2.9,0.5c-0.8,0.3-1.5,0.7-2.2,1.4C5.3,4.6,4.8,5.3,4.5,6.1
+            C4.3,6.9,4.1,7.7,4,9.1C4,10.3,4,10.7,4,14s0,3.7,0.1,4.9c0.1,1.3,0.2,2.2,0.5,2.9c0.3,0.8,0.7,1.5,1.4,2.2
+            c0.7,0.7,1.4,1.1,2.2,1.4c0.8,0.3,1.6,0.5,2.9,0.5c1.3,0.1,1.6,0.1,4.9,0.1s3.7,0,4.9-0.1c1.3-0.1,2.2-0.2,2.9-0.5
+            c0.8-0.3,1.5-0.7,2.2-1.4c0.7-0.7,1.1-1.4,1.4-2.2c0.3-0.8,0.5-1.6,0.5-2.9c0.1-1.3,0.1-1.6,0.1-4.9s0-3.7-0.1-4.9
+            c-0.1-1.3-0.2-2.2-0.5-2.9c-0.3-0.8-0.7-1.5-1.4-2.2c-0.7-0.7-1.4-1.1-2.2-1.4c-0.8-0.3-1.6-0.5-2.9-0.5C19.7,2,19.3,2,16,2
+            L16,2z"/>
+          <path d="M16,7.8c-3.4,0-6.2,2.8-6.2,6.2s2.8,6.2,6.2,6.2s6.2-2.8,6.2-6.2S19.4,7.8,16,7.8z M16,18c-2.2,0-4-1.8-4-4
+            s1.8-4,4-4s4,1.8,4,4S18.2,18,16,18z"/>
+          <circle cx="22.4" cy="7.6" r="1.4"/>
+        </svg>
+      ),
+      facebook: (
+        <svg width="16" height="16" viewBox="0 0 32 32" fill="white">
+          <path d="M26.7,4H5.3C4.6,4,4,4.6,4,5.3v21.3C4,27.4,4.6,28,5.3,28h11.5v-9.3h-3.1v-3.6h3.1v-2.7c0-3.1,1.9-4.8,4.7-4.8
+            c1.3,0,2.5,0.1,2.8,0.1v3.2h-1.9c-1.5,0-1.8,0.7-1.8,1.8v2.3h3.6l-0.5,3.6h-3.1V28h6.1c0.7,0,1.3-0.6,1.3-1.3V5.3
+            C28,4.6,27.4,4,26.7,4z"/>
+        </svg>
+      ),
+      twitter: (
+        <svg width="16" height="16" viewBox="0 0 32 32" fill="white">
+          <path d="M18.4,14.3L27.5,4h-2.2l-7.9,9l-6.3-9H4l9.5,13.6L4,28h2.2l8.3-9.5l6.6,9.5H28L18.4,14.3z M15.2,17.1l-1-1.4L6.8,5.6h3.3
+            l6.2,8.8l1,1.4l8.1,11.5h-3.3L15.2,17.1z"/>
+        </svg>
+      ),
+      linkedin: (
+        <svg width="16" height="16" viewBox="0 0 32 32" fill="white">
+          <path d="M26.2,4H5.8C4.8,4,4,4.8,4,5.7v20.5c0,0.9,0.8,1.7,1.8,1.7h20.4c1,0,1.8-0.8,1.8-1.7V5.7C28,4.8,27.2,4,26.2,4z M11.1,24.4
+            H7.6V13h3.5V24.4z M9.4,11.4c-1.1,0-2.1-0.9-2.1-2.1c0-1.2,0.9-2.1,2.1-2.1c1.1,0,2.1,0.9,2.1,2.1C11.4,10.5,10.5,11.4,9.4,11.4z
+            M24.5,24.4H21v-5.6c0-1.3,0-3-1.9-3c-1.9,0-2.1,1.5-2.1,2.9v5.7h-3.5V13h3.3v1.6h0c0.5-0.9,1.6-1.9,3.4-1.9c3.6,0,4.3,2.4,4.3,5.5
+            V24.4z"/>
+        </svg>
+      ),
+      youtube: (
+        <svg width="16" height="16" viewBox="0 0 32 32" fill="white">
+          <path d="M29.4,10.2c-0.3-1.2-1.2-2.1-2.4-2.4C24.8,7,16,7,16,7s-8.8,0-11,0.8c-1.2,0.3-2.1,1.2-2.4,2.4C2,12.4,2,16,2,16
+            s0,3.6,0.6,5.8c0.3,1.2,1.2,2.1,2.4,2.4C7.2,25,16,25,16,25s8.8,0,11-0.8c1.2-0.3,2.1-1.2,2.4-2.4C30,19.6,30,16,30,16
+            S30,12.4,29.4,10.2z M13,20V12l7.3,4L13,20z"/>
+        </svg>
+      ),
+    };
+
+    // QF Design System Colors (categorical palette for data visualization)
+    const qfColors = {
+      primary: '#11362A',    // Primary green
+      sage: '#889A68',       // Sage 500
+      olive: '#6B7D3D',      // Categorical - Olive
+      lavender: '#B8B4D4',   // Categorical - Lavender
+      coral: '#D4847A',      // Categorical - Coral
+      steel: '#4A6B8A',      // Categorical - Steel
+      sand: '#C4B49A',       // Categorical - Sand
+      forest: '#1A3530',     // Categorical - Forest
+      teal: '#2D6A6A',       // Categorical - Teal
+      rose: '#C49A9A',       // Categorical - Rose
+    };
+
+    // Platform colors using QF categorical palette
+    const platformColors = {
+      instagram: '#11362A',   // Primary
+      facebook: '#889A68',    // Sage
+      twitter: '#B8B4D4',     // Lavender
+      linkedin: '#4A6B8A',    // Steel
+      youtube: '#D4847A',     // Coral
+    };
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // HELPER COMPONENTS
+    // ─────────────────────────────────────────────────────────────────────────────
+
+    const Tooltip = ({ children, visible, position = 'top' }) => {
+      if (!visible) return null;
+      const positions = {
+        top: 'bottom-full left-1/2 -translate-x-1/2 mb-2',
+        center: 'top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2',
+        right: 'left-full top-1/2 -translate-y-1/2 ml-2',
+      };
+      return (
+        <div className={`absolute ${positions[position]} bg-white border border-[#E8E8E5] rounded-lg shadow-lg px-4 py-3 pointer-events-none z-20 whitespace-nowrap`}>
+          {children}
+        </div>
+      );
+    };
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // NAVIGATION COMPONENTS
+    // ─────────────────────────────────────────────────────────────────────────────
+
+    const TopNavBar = () => {
+      const [activeTab, setActiveTab] = useState('social');
+
+      return (
+        <header className="bg-[#11362A] text-white">
+          <div className="px-6 py-4 flex items-center justify-between">
+            <div className="flex items-center gap-8">
+              <h1 className="text-lg font-semibold">Communications Dashboard</h1>
+              <nav className="flex gap-1">
+                <button
+                  onClick={() => setActiveTab('overview')}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    activeTab === 'overview'
+                      ? 'bg-white/20 text-white'
+                      : 'text-white/70 hover:text-white hover:bg-white/10'
+                  }`}
+                >
+                  Overview
+                </button>
+                <button
+                  onClick={() => setActiveTab('social')}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    activeTab === 'social'
+                      ? 'bg-white/20 text-white'
+                      : 'text-white/70 hover:text-white hover:bg-white/10'
+                  }`}
+                >
+                  Social Media
+                </button>
+              </nav>
+            </div>
+            <div className="flex items-center gap-4">
+              <button className="w-8 h-8 rounded-full bg-white/20 flex items-center justify-center hover:bg-white/30 transition-colors">
+                <UserIcon />
+              </button>
+            </div>
+          </div>
+        </header>
+      );
+    };
+
+    const SubNavigation = () => {
+      const [activeEntity, setActiveEntity] = useState('qf');
+
+      return (
+        <div className="bg-white border-b border-[#E8E8E5] px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-6">
+              <h2 className="text-xl font-semibold text-[#0B241C]">Social Media Analytics</h2>
+              <div className="flex bg-[#F5F5F3] rounded-lg p-1">
+                <button
+                  onClick={() => setActiveEntity('qf')}
+                  className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                    activeEntity === 'qf'
+                      ? 'bg-white text-[#0B241C] shadow-sm'
+                      : 'text-[#5C5C59] hover:text-[#0B241C]'
+                  }`}
+                >
+                  Qatar Foundation
+                </button>
+                <button
+                  onClick={() => setActiveEntity('ec')}
+                  className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                    activeEntity === 'ec'
+                      ? 'bg-white text-[#0B241C] shadow-sm'
+                      : 'text-[#5C5C59] hover:text-[#0B241C]'
+                  }`}
+                >
+                  Education City
+                </button>
+              </div>
+            </div>
+            <button className="flex items-center gap-2 px-4 py-2 bg-[#F5F5F3] rounded-lg text-sm text-[#0B241C] hover:bg-[#E8E8E5] transition-colors">
+              <CalendarIcon />
+              <span>Last 30 days</span>
+              <ChevronDownIcon />
+            </button>
+          </div>
+        </div>
+      );
+    };
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // STAT CARD COMPONENT
+    // ─────────────────────────────────────────────────────────────────────────────
+
+    const StatCard = ({ title, value, trend, trendLabel = "vs last period", icon }) => {
+      const isPositive = trend >= 0;
+      const trendColor = isPositive ? '#385C4B' : '#8B4049';
+
+      const GroupIcon = () => (
+        <svg width="20" height="20" viewBox="0 0 32 32" fill="#4A7561">
+          <path d="M31,30H29V27a3,3,0,0,0-3-3H22a3,3,0,0,0-3,3v3H17V27a5,5,0,0,1,5-5h4a5,5,0,0,1,5,5Z"/>
+          <path d="M24,12a3,3,0,1,1-3,3,3,3,0,0,1,3-3m0-2a5,5,0,1,0,5,5A5,5,0,0,0,24,10Z"/>
+          <path d="M15,22H13V19a3,3,0,0,0-3-3H6a3,3,0,0,0-3,3v3H1V19a5,5,0,0,1,5-5h4a5,5,0,0,1,5,5Z"/>
+          <path d="M8,4A3,3,0,1,1,5,7,3,3,0,0,1,8,4M8,2a5,5,0,1,0,5,5A5,5,0,0,0,8,2Z"/>
+        </svg>
+      );
+
+      return (
+        <div className="bg-[#F4F6F0] rounded-xl p-5 border border-[#E8E8E5] flex flex-col h-full">
+          <div className="flex items-start justify-between mb-3">
+            <h3 className="text-sm font-medium text-[#4A7561] leading-tight">{title}</h3>
+            {icon || <GroupIcon />}
+          </div>
+          <div className="mt-auto">
+            <p className="text-3xl font-light text-[#0B241C] mb-2" style={{ letterSpacing: '-0.02em' }}>
+              {typeof value === 'number' ? value.toLocaleString() : value}
+            </p>
+            {trend !== undefined && (
+              <div className="flex items-center gap-1.5">
+                <TrendUpIcon color={trendColor} />
+                <span className="text-xs" style={{ color: trendColor }}>
+                  {isPositive ? '+' : ''}{trend}% {trendLabel}
+                </span>
+              </div>
+            )}
+          </div>
+        </div>
+      );
+    };
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // POST CARD COMPONENT
+    // ─────────────────────────────────────────────────────────────────────────────
+
+    const PostCard = ({
+      image = 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=600&q=80',
+      platform = 'instagram',
+      badge = 'Video',
+      title = 'Student Life at Education City',
+      likes = '3.2K',
+      comments = '234',
+      shares = '89'
+    }) => {
+      return (
+        <div
+          className="relative rounded-xl overflow-hidden h-52 flex flex-col justify-end p-4"
+          style={{
+            backgroundImage: `url(${image})`,
+            backgroundSize: 'cover',
+            backgroundPosition: 'center',
+          }}
+        >
+          <div
+            className="absolute inset-0 pointer-events-none"
+            style={{
+              background: 'linear-gradient(to top, rgba(0,0,0,0.7) 0%, rgba(0,0,0,0) 60%)',
+            }}
+          />
+          <div className="relative z-10 flex flex-col gap-2">
+            <div className="flex items-center gap-2">
+              <div className="w-6 h-6 rounded-full flex items-center justify-center" style={{ backgroundColor: platformColors[platform] }}>
+                {PlatformIcons[platform]}
+              </div>
+              <span
+                className="text-white text-xs font-medium px-2 py-0.5 rounded-md"
+                style={{ backgroundColor: 'rgba(255,255,255,0.2)' }}
+              >
+                {badge}
+              </span>
+            </div>
+            <p className="text-white text-sm font-medium line-clamp-2">{title}</p>
+            <div className="flex items-center gap-4 text-white/80 text-xs">
+              <span className="flex items-center gap-1">
+                <HeartIcon />
+                {likes}
+              </span>
+              <span className="flex items-center gap-1">
+                <ChatIcon />
+                {comments}
+              </span>
+              <span className="flex items-center gap-1">
+                <ShareIcon />
+                {shares}
+              </span>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // CHART COMPONENTS
+    // ─────────────────────────────────────────────────────────────────────────────
+
+    // Stacked Vertical Bar Chart (Engagement by Platform)
+    const EngagementChart = () => {
+      const [hovered, setHovered] = useState(null);
+
+      // QF Design System categorical colors
+      const platforms = [
+        { name: 'Instagram', color: '#11362A' },  // Primary
+        { name: 'Facebook', color: '#889A68' },   // Sage
+        { name: 'LinkedIn', color: '#4A6B8A' },   // Steel
+        { name: 'Twitter', color: '#B8B4D4' },    // Lavender
+        { name: 'YouTube', color: '#D4847A' },    // Coral
+      ];
+
+      const data = [
+        { type: 'Likes', total: 48500, breakdown: { Instagram: 18500, Facebook: 14500, LinkedIn: 5500, Twitter: 5500, YouTube: 4500 } },
+        { type: 'Comments', total: 8900, breakdown: { Instagram: 3200, Facebook: 2400, LinkedIn: 800, Twitter: 1800, YouTube: 700 } },
+        { type: 'Shares', total: 5500, breakdown: { Instagram: 1800, Facebook: 1500, LinkedIn: 700, Twitter: 1000, YouTube: 500 } },
+        { type: 'Saves', total: 4200, breakdown: { Instagram: 1600, Facebook: 1200, LinkedIn: 400, Twitter: 600, YouTube: 400 } },
+      ];
+
+      const maxTotal = 60000;
+      const chartHeight = 180;
+
+      return (
+        <div>
+          <div className="flex flex-wrap gap-3 text-xs mb-4">
+            {platforms.map((p, i) => (
+              <div key={i} className="flex items-center gap-1.5">
+                <div className="w-3 h-3 rounded" style={{ backgroundColor: p.color }} />
+                <span className="text-[#4A7561]">{p.name}</span>
+              </div>
+            ))}
+          </div>
+
+          <div className="flex">
+            <div className="flex flex-col justify-between text-xs text-[#4A7561] pr-3 w-10" style={{ height: `${chartHeight}px` }}>
+              <span>60K</span><span>45K</span><span>30K</span><span>15K</span><span>0</span>
+            </div>
+
+            <div className="flex-1 relative">
+              <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
+                {[0,1,2,3,4].map(i => <div key={i} className="border-t border-dashed border-[#E8E8E5]" />)}
+              </div>
+
+              <div className="flex items-end gap-4 relative" style={{ height: `${chartHeight}px` }}>
+                {data.map((item, barIndex) => {
+                  const barHeight = (item.total / maxTotal) * chartHeight;
+                  return (
+                    <div
+                      key={barIndex}
+                      className="flex-1 flex flex-col items-center relative cursor-pointer"
+                      onMouseEnter={() => setHovered(barIndex)}
+                      onMouseLeave={() => setHovered(null)}
+                    >
+                      <div className="w-full relative flex flex-col-reverse rounded-t overflow-hidden" style={{ height: `${barHeight}px` }}>
+                        {platforms.map((platform, segIndex) => {
+                          const segmentValue = item.breakdown[platform.name];
+                          const segmentHeight = (segmentValue / item.total) * 100;
+                          return (
+                            <div
+                              key={segIndex}
+                              style={{
+                                height: `${segmentHeight}%`,
+                                backgroundColor: platform.color,
+                                opacity: hovered !== null && hovered !== barIndex ? 0.4 : 1
+                              }}
+                              className="transition-opacity duration-200"
+                            />
+                          );
+                        })}
+                      </div>
+                      <Tooltip visible={hovered === barIndex} position="top">
+                        <p className="text-sm font-medium text-[#0B241C] mb-2">{item.type}: {item.total.toLocaleString()}</p>
+                        {platforms.map((p, pi) => (
+                          <div key={pi} className="flex items-center gap-2 text-xs leading-relaxed">
+                            <div className="w-2 h-2 rounded" style={{ backgroundColor: p.color }} />
+                            <span className="text-[#4A7561]">{p.name}:</span>
+                            <span className="font-medium text-[#0B241C]">{item.breakdown[p.name].toLocaleString()}</span>
+                          </div>
+                        ))}
+                      </Tooltip>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex gap-4 ml-10 mt-2">
+            {data.map((item, i) => (
+              <div key={i} className="flex-1 text-center">
+                <span className="text-xs text-[#4A7561]">{item.type}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    };
+
+    // Video Views Bar Chart
+    const VideoViewsChart = () => {
+      const [hovered, setHovered] = useState(null);
+
+      // QF Design System - using single sage color like design system vertical bar
+      const data = [
+        { platform: 'YouTube', value: 125000 },
+        { platform: 'Instagram', value: 89000 },
+        { platform: 'Facebook', value: 67000 },
+        { platform: 'LinkedIn', value: 23000 },
+        { platform: 'Twitter', value: 18000 },
+      ];
+
+      const barColor = '#889A68'; // Sage 500
+      const maxValue = 150000;
+      const chartHeight = 180;
+
+      return (
+        <div>
+          <div className="flex">
+            <div className="flex flex-col justify-between text-xs text-[#4A7561] pr-3 w-10" style={{ height: `${chartHeight}px` }}>
+              <span>150K</span><span>100K</span><span>50K</span><span>0</span>
+            </div>
+
+            <div className="flex-1 relative">
+              <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
+                {[0,1,2,3].map(i => <div key={i} className="border-t border-dashed border-[#E8E8E5]" />)}
+              </div>
+
+              <div className="flex items-end gap-3 relative" style={{ height: `${chartHeight}px` }}>
+                {data.map((item, i) => (
+                  <div
+                    key={i}
+                    className="flex-1 flex flex-col items-center relative cursor-pointer"
+                    onMouseEnter={() => setHovered(i)}
+                    onMouseLeave={() => setHovered(null)}
+                  >
+                    <div
+                      className="w-full rounded-t transition-all duration-200"
+                      style={{
+                        height: `${(item.value / maxValue) * chartHeight}px`,
+                        backgroundColor: barColor,
+                        opacity: hovered !== null && hovered !== i ? 0.4 : 1
+                      }}
+                    />
+                    <Tooltip visible={hovered === i} position="top">
+                      <p className="text-sm font-medium text-[#0B241C]">{item.platform}</p>
+                      <p className="text-lg font-semibold text-[#11362A]">{item.value.toLocaleString()}</p>
+                    </Tooltip>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex gap-3 ml-10 mt-2">
+            {data.map((item, i) => (
+              <div key={i} className="flex-1 text-center">
+                <span className="text-xs text-[#4A7561]">{item.platform.slice(0, 2)}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    };
+
+    // Reach by Platform (Horizontal Bar)
+    const ReachChart = () => {
+      const [hovered, setHovered] = useState(null);
+
+      // QF Design System - using single sage color like the design system horizontal bar
+      const data = [
+        { platform: 'Instagram', value: 425000 },
+        { platform: 'Facebook', value: 380000 },
+        { platform: 'YouTube', value: 210000 },
+        { platform: 'LinkedIn', value: 145000 },
+        { platform: 'Twitter', value: 98000 },
+      ];
+
+      const barColor = '#889A68'; // Sage 500
+
+      const maxValue = 500000;
+
+      return (
+        <div className="space-y-3">
+          {data.map((item, i) => (
+            <div
+              key={i}
+              className="relative cursor-pointer"
+              onMouseEnter={() => setHovered(i)}
+              onMouseLeave={() => setHovered(null)}
+            >
+              <div className="flex items-center gap-3">
+                <div className="w-20 text-right">
+                  <span className="text-xs text-[#4A7561]">{item.platform}</span>
+                </div>
+                <div className="flex-1 relative">
+                  <div className="w-full h-7 bg-[#F5F5F3] rounded overflow-hidden">
+                    <div
+                      className="h-full rounded flex items-center justify-end pr-2 transition-all duration-300"
+                      style={{
+                        width: `${(item.value / maxValue) * 100}%`,
+                        backgroundColor: barColor,
+                        opacity: hovered !== null && hovered !== i ? 0.4 : 1
+                      }}
+                    >
+                      <span className="text-white text-xs font-medium">
+                        {(item.value / 1000).toFixed(0)}K
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          ))}
+
+          <div className="flex items-center gap-3 mt-2">
+            <div className="w-20" />
+            <div className="flex-1 flex justify-between text-xs text-[#4A7561]">
+              <span>0</span><span>125K</span><span>250K</span><span>375K</span><span>500K</span>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // Platform Breakdown Donut Chart
+    const PlatformBreakdownChart = () => {
+      const [hovered, setHovered] = useState(null);
+
+      // QF Design System categorical colors
+      const data = [
+        { name: 'Instagram', value: 306000, percent: 40, color: '#11362A' },  // Primary
+        { name: 'Facebook', value: 230000, percent: 30, color: '#889A68' },   // Sage
+        { name: 'YouTube', value: 115000, percent: 15, color: '#BDC8AB' },    // Sage 300
+        { name: 'LinkedIn', value: 77000, percent: 10, color: '#D6D6D2' },    // Neutral 300
+        { name: 'Twitter', value: 38000, percent: 5, color: '#4A6B8A' },      // Steel
+      ];
+
+      const total = 766000;
+
+      let cumulativePercent = 0;
+      const segments = data.map(d => {
+        const segment = { ...d, offset: cumulativePercent };
+        cumulativePercent += d.percent;
+        return segment;
+      });
+
+      return (
+        <div className="flex gap-6">
+          <div className="relative flex-shrink-0">
+            <svg viewBox="0 0 200 200" className="w-40 h-40">
+              {segments.map((segment, i) => {
+                const circumference = 2 * Math.PI * 60;
+                const strokeDash = (segment.percent / 100) * circumference;
+                const strokeOffset = -(segment.offset / 100) * circumference;
+
+                return (
+                  <circle
+                    key={i}
+                    cx="100" cy="100" r="60"
+                    fill="none"
+                    stroke={segment.color}
+                    strokeWidth="24"
+                    strokeDasharray={`${strokeDash} ${circumference}`}
+                    strokeDashoffset={strokeOffset}
+                    transform="rotate(-90 100 100)"
+                    opacity={hovered !== null && hovered !== i ? 0.4 : 1}
+                    className="transition-opacity duration-200 cursor-pointer"
+                    onMouseEnter={() => setHovered(i)}
+                    onMouseLeave={() => setHovered(null)}
+                  />
+                );
+              })}
+              <text x="100" y="95" textAnchor="middle" fontSize="20" fontWeight="300" fill="#0B241C">
+                {(total / 1000).toFixed(0)}K
+              </text>
+              <text x="100" y="115" textAnchor="middle" fontSize="10" fill="#4A7561">
+                Total Reach
+              </text>
+            </svg>
+          </div>
+
+          <div className="flex-1 border border-[#E8E8E5] rounded-lg overflow-hidden text-sm">
+            <div className="flex bg-[#F5F5F3] px-3 py-2 text-xs font-medium text-[#4A7561]">
+              <span className="flex-1">Platform</span>
+              <span className="w-16 text-right">Reach</span>
+              <span className="w-12 text-right">%</span>
+            </div>
+            {data.map((item, i) => (
+              <div
+                key={i}
+                className={`flex items-center px-3 py-2 cursor-pointer transition-colors ${
+                  hovered === i ? 'bg-[#F5F5F3]' : i % 2 === 0 ? 'bg-white' : 'bg-[#FAFAF9]'
+                }`}
+                onMouseEnter={() => setHovered(i)}
+                onMouseLeave={() => setHovered(null)}
+              >
+                <div className="flex items-center gap-2 flex-1">
+                  <div className="w-2.5 h-2.5 rounded" style={{ backgroundColor: item.color }} />
+                  <span className="text-[#0B241C]">{item.name}</span>
+                </div>
+                <span className="w-16 text-right text-[#0B241C]">{(item.value / 1000).toFixed(0)}K</span>
+                <span className="w-12 text-right text-[#4A7561]">{item.percent}%</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    };
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // DATA TABLE COMPONENT
+    // ─────────────────────────────────────────────────────────────────────────────
+
+    const PostPerformanceTable = () => {
+      const [activeFilter, setActiveFilter] = useState('all');
+      const [currentPage, setCurrentPage] = useState(1);
+
+      const filters = [
+        { id: 'all', label: 'All' },
+        { id: 'instagram', label: 'Instagram' },
+        { id: 'facebook', label: 'Facebook' },
+        { id: 'twitter', label: 'Twitter' },
+        { id: 'linkedin', label: 'LinkedIn' },
+        { id: 'youtube', label: 'YouTube' },
+      ];
+
+      const posts = [
+        { title: 'Student Life at Education City', platform: 'instagram', date: 'Dec 8, 2024', impressions: '125.4K', reach: '98.2K', engagement: '8.5K', rate: '6.8%' },
+        { title: 'QF Innovation Summit Highlights', platform: 'facebook', date: 'Dec 7, 2024', impressions: '89.3K', reach: '72.1K', engagement: '5.2K', rate: '5.8%' },
+        { title: 'Research Excellence Awards', platform: 'linkedin', date: 'Dec 6, 2024', impressions: '45.6K', reach: '38.4K', engagement: '3.1K', rate: '6.8%' },
+        { title: 'World Cup Legacy Documentary', platform: 'youtube', date: 'Dec 5, 2024', impressions: '234.5K', reach: '189.2K', engagement: '12.3K', rate: '5.2%' },
+        { title: 'Campus Tour 2024', platform: 'twitter', date: 'Dec 4, 2024', impressions: '32.1K', reach: '28.9K', engagement: '2.1K', rate: '6.5%' },
+        { title: 'Scholarship Announcement', platform: 'instagram', date: 'Dec 3, 2024', impressions: '156.7K', reach: '134.2K', engagement: '11.2K', rate: '7.1%' },
+      ];
+
+      const filteredPosts = activeFilter === 'all'
+        ? posts
+        : posts.filter(p => p.platform === activeFilter);
+
+      return (
+        <div className="bg-white rounded-xl border border-[#E8E8E5] overflow-hidden">
+          <div className="px-6 py-4 border-b border-[#E8E8E5]">
+            <div className="flex items-center justify-between">
+              <h3 className="text-lg font-semibold text-[#0B241C]">Post Performance Details</h3>
+              <div className="flex gap-1">
+                {filters.map(f => (
+                  <button
+                    key={f.id}
+                    onClick={() => setActiveFilter(f.id)}
+                    className={`px-3 py-1.5 rounded-md text-xs font-medium transition-colors ${
+                      activeFilter === f.id
+                        ? 'bg-[#11362A] text-white'
+                        : 'bg-[#F5F5F3] text-[#5C5C59] hover:bg-[#E8E8E5]'
+                    }`}
+                  >
+                    {f.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+
+          <table className="w-full">
+            <thead>
+              <tr className="bg-[#F5F5F3] text-xs text-[#4A7561] font-medium">
+                <th className="text-left px-6 py-3">Post</th>
+                <th className="text-left px-4 py-3">Platform</th>
+                <th className="text-left px-4 py-3">Date</th>
+                <th className="text-right px-4 py-3">Impressions</th>
+                <th className="text-right px-4 py-3">Reach</th>
+                <th className="text-right px-4 py-3">Engagement</th>
+                <th className="text-right px-6 py-3">Rate</th>
+              </tr>
+            </thead>
+            <tbody>
+              {filteredPosts.map((post, i) => (
+                <tr key={i} className={`text-sm ${i % 2 === 0 ? 'bg-white' : 'bg-[#FAFAF9]'} hover:bg-[#F4F6F0] transition-colors`}>
+                  <td className="px-6 py-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-[#E8E8E5] rounded-lg flex items-center justify-center">
+                        <ImageIcon />
+                      </div>
+                      <span className="text-[#0B241C] font-medium">{post.title}</span>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3">
+                    <div className="flex items-center gap-2">
+                      <div className="w-5 h-5 rounded-full flex items-center justify-center" style={{ backgroundColor: platformColors[post.platform] }}>
+                        {PlatformIcons[post.platform]}
+                      </div>
+                      <span className="text-[#4A7561] capitalize">{post.platform}</span>
+                    </div>
+                  </td>
+                  <td className="px-4 py-3 text-[#4A7561]">{post.date}</td>
+                  <td className="px-4 py-3 text-right text-[#0B241C]">{post.impressions}</td>
+                  <td className="px-4 py-3 text-right text-[#0B241C]">{post.reach}</td>
+                  <td className="px-4 py-3 text-right text-[#0B241C]">{post.engagement}</td>
+                  <td className="px-6 py-3 text-right">
+                    <span className="text-[#385C4B] font-medium">{post.rate}</span>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          <div className="px-6 py-3 border-t border-[#E8E8E5] flex items-center justify-between text-sm">
+            <span className="text-[#4A7561]">Showing {filteredPosts.length} of {posts.length} posts</span>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                className="p-1.5 rounded hover:bg-[#F5F5F3] transition-colors text-[#4A7561]"
+              >
+                <ChevronLeftIcon />
+              </button>
+              <span className="px-3 py-1 bg-[#11362A] text-white rounded text-xs font-medium">1</span>
+              <button
+                onClick={() => setCurrentPage(currentPage + 1)}
+                className="p-1.5 rounded hover:bg-[#F5F5F3] transition-colors text-[#4A7561]"
+              >
+                <ChevronRightIcon />
+              </button>
+            </div>
+          </div>
+        </div>
+      );
+    };
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // CARD WRAPPER
+    // ─────────────────────────────────────────────────────────────────────────────
+
+    const ChartCard = ({ title, children }) => (
+      <div className="bg-white rounded-xl border border-[#E8E8E5] p-5">
+        <h3 className="text-base font-semibold text-[#0B241C] mb-4">{title}</h3>
+        {children}
+      </div>
+    );
+
+    // ─────────────────────────────────────────────────────────────────────────────
+    // MAIN APP
+    // ─────────────────────────────────────────────────────────────────────────────
+
+    function Dashboard() {
+      const stats = [
+        { title: 'Total Pageviews', value: '1.2M', trend: 12.5 },
+        { title: 'Total Reach', value: '766K', trend: 8.3 },
+        { title: 'Engagement', value: '125K', trend: 15.2 },
+        { title: 'Followers', value: '2.1M', trend: 3.8 },
+        { title: 'Posts', value: 342, trend: 22.1 },
+      ];
+
+      const topPosts = [
+        {
+          image: 'https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=600&q=80',
+          platform: 'instagram',
+          badge: 'Video',
+          title: 'Student Life at Education City',
+          likes: '3.2K',
+          comments: '234',
+          shares: '89'
+        },
+        {
+          image: 'https://images.unsplash.com/photo-1606761568499-6d2451b23c66?w=600&q=80',
+          platform: 'facebook',
+          badge: 'Photo',
+          title: 'QF Innovation Summit 2024',
+          likes: '1.8K',
+          comments: '156',
+          shares: '42'
+        },
+        {
+          image: 'https://images.unsplash.com/photo-1524178232363-1fb2b075b655?w=600&q=80',
+          platform: 'youtube',
+          badge: 'Video',
+          title: 'Research Excellence Awards Ceremony',
+          likes: '5.4K',
+          comments: '412',
+          shares: '267'
+        },
+      ];
+
+      return (
+        <div className="min-h-screen bg-[#F5F5F3]" style={{ fontFamily: "system-ui, -apple-system, sans-serif" }}>
+          <TopNavBar />
+          <SubNavigation />
+
+          <main className="p-6 space-y-6">
+            {/* Stat Cards Row */}
+            <div className="grid grid-cols-5 gap-4">
+              {stats.map((stat, i) => (
+                <StatCard key={i} {...stat} />
+              ))}
+            </div>
+
+            {/* Top 3 Posts Section */}
+            <div>
+              <div className="flex items-center gap-2 mb-4">
+                <ImageIcon />
+                <h3 className="text-lg font-semibold text-[#0B241C]">Top 3 Posts</h3>
+              </div>
+              <div className="grid grid-cols-3 gap-4">
+                {topPosts.map((post, i) => (
+                  <PostCard key={i} {...post} />
+                ))}
+              </div>
+            </div>
+
+            {/* Charts Grid */}
+            <div className="grid grid-cols-2 gap-4">
+              <ChartCard title="Engagement by Platform">
+                <EngagementChart />
+              </ChartCard>
+              <ChartCard title="Video Views by Platform">
+                <VideoViewsChart />
+              </ChartCard>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <ChartCard title="Reach by Platform">
+                <ReachChart />
+              </ChartCard>
+              <ChartCard title="Platform Breakdown">
+                <PlatformBreakdownChart />
+              </ChartCard>
+            </div>
+
+            {/* Post Performance Table */}
+            <PostPerformanceTable />
+          </main>
+
+          {/* Footer */}
+          <footer className="px-6 py-4 text-center text-xs text-[#4A7561] border-t border-[#E8E8E5] bg-white">
+            QF Communications Dashboard v1.0 — Built with QF Design System
+          </footer>
+        </div>
+      );
+    }
+
+    const root = ReactDOM.createRoot(document.getElementById('root'));
+    root.render(<Dashboard />);
+  </script>
+</body>
+</html>
