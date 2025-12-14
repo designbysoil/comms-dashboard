@@ -27,7 +27,7 @@
     const { useState } = React;
 
     // =============================================================================
-    // QF COMMUNICATIONS DASHBOARD — DESIGN SYSTEM v2.3
+    // QF COMMUNICATIONS DASHBOARD — DESIGN SYSTEM v2.4
     // =============================================================================
 
     // ─────────────────────────────────────────────────────────────────────────────
@@ -173,6 +173,52 @@
   </div>
 </div>`,
 
+      verticalBarLabeled: `<!-- QF Design System - Vertical Bar Chart with Labels -->
+<div style="font-family: system-ui, -apple-system, sans-serif; max-width: 400px;">
+  <!-- Chart container -->
+  <div style="display: flex;">
+    <!-- Y-axis labels -->
+    <div style="display: flex; flex-direction: column; justify-content: space-between; font-size: 12px; color: #4A7561; padding-right: 12px; width: 40px; text-align: right; height: 200px;">
+      <span>40%</span><span>30%</span><span>20%</span><span>10%</span><span>0%</span>
+    </div>
+    <!-- Chart area with grid lines and bars -->
+    <div style="flex: 1; position: relative; height: 200px;">
+      <!-- Grid lines -->
+      <div style="position: absolute; inset: 0; display: flex; flex-direction: column; justify-content: space-between;">
+        <div style="border-top: 1px dashed #E8E8E5;"></div>
+        <div style="border-top: 1px dashed #E8E8E5;"></div>
+        <div style="border-top: 1px dashed #E8E8E5;"></div>
+        <div style="border-top: 1px dashed #E8E8E5;"></div>
+        <div style="border-top: 1px dashed #E8E8E5;"></div>
+      </div>
+      <!-- Bars -->
+      <div style="display: flex; align-items: flex-end; gap: 24px; height: 100%; position: relative;">
+        <!-- Bar 1 -->
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
+          <span style="font-size: 12px; font-weight: 600; color: white; background: #434340; padding: 4px 12px; border-radius: 99px; margin-bottom: 8px;">12.2%</span>
+          <div style="width: 100%; height: 61px; background: #889A68; border-radius: 4px 4px 0 0;"></div>
+        </div>
+        <!-- Bar 2 -->
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
+          <span style="font-size: 12px; font-weight: 600; color: white; background: #434340; padding: 4px 12px; border-radius: 99px; margin-bottom: 8px;">25.1%</span>
+          <div style="width: 100%; height: 125px; background: #889A68; border-radius: 4px 4px 0 0;"></div>
+        </div>
+        <!-- Bar 3 -->
+        <div style="flex: 1; display: flex; flex-direction: column; align-items: center;">
+          <span style="font-size: 12px; font-weight: 600; color: white; background: #434340; padding: 4px 12px; border-radius: 99px; margin-bottom: 8px;">40%</span>
+          <div style="width: 100%; height: 200px; background: #889A68; border-radius: 4px 4px 0 0;"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <!-- X-axis labels -->
+  <div style="display: flex; gap: 24px; margin-left: 52px; margin-top: 12px;">
+    <span style="flex: 1; text-align: center; font-size: 12px; color: #4A7561;">Productivity</span>
+    <span style="flex: 1; text-align: center; font-size: 12px; color: #4A7561;">Speed</span>
+    <span style="flex: 1; text-align: center; font-size: 12px; color: #4A7561;">Quality</span>
+  </div>
+</div>`,
+
       trendLine: `<!-- QF Design System - Trend Line Chart -->
 <div style="font-family: system-ui, -apple-system, sans-serif; max-width: 600px;">
   <!-- Legend -->
@@ -275,33 +321,39 @@
   </div>
 </div>`,
 
-      bubble: `<!-- QF Design System - Bubble Chart -->
+      bubble: `<!-- QF Design System - Bubble Chart (Non-overlapping, very tight spacing, +5% size) -->
 <div style="font-family: system-ui, -apple-system, sans-serif; max-width: 500px;">
-  <svg viewBox="0 0 470 400" style="width: 100%; height: auto;">
-    <!-- Large bubbles -->
-    <circle cx="120" cy="140" r="92" fill="#11362A"/>
-    <text x="120" y="135" text-anchor="middle" fill="white" font-size="14" font-weight="500">Qatar</text>
-    <text x="120" y="155" text-anchor="middle" fill="white" font-size="14" font-weight="500">Foundation</text>
+  <svg viewBox="0 0 470 460" style="width: 100%; height: auto;">
+    <!-- Aerospace - largest bubble, bottom right -->
+    <circle cx="295" cy="340" r="110" fill="#B8B4D4"/>
+    <text x="295" y="330" text-anchor="middle" fill="#0B241C" font-size="16" font-weight="500">Aerospace</text>
+    <text x="295" y="352" text-anchor="middle" fill="#2A4639" font-size="14">+147%</text>
 
-    <circle cx="300" cy="120" r="69" fill="#889A68"/>
-    <text x="300" y="115" text-anchor="middle" fill="white" font-size="12" font-weight="500">Education</text>
-    <text x="300" y="133" text-anchor="middle" fill="white" font-size="12" font-weight="500">City</text>
+    <!-- Cleantech - top center -->
+    <circle cx="210" cy="95" r="79" fill="#6B7D3D"/>
+    <text x="210" y="90" text-anchor="middle" fill="white" font-size="14" font-weight="500">Cleantech</text>
+    <text x="210" y="108" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-size="12">+91%</text>
 
-    <circle cx="380" cy="240" r="55" fill="#BDC8AB"/>
-    <text x="380" y="245" text-anchor="middle" fill="#0B241C" font-size="11" font-weight="500">QF Research</text>
+    <!-- Security - bottom left -->
+    <circle cx="100" cy="310" r="71" fill="#D4847A"/>
+    <text x="100" y="305" text-anchor="middle" fill="white" font-size="13" font-weight="500">Security</text>
+    <text x="100" y="323" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-size="11">+91%</text>
 
-    <circle cx="180" cy="300" r="46" fill="#B8B4D4"/>
-    <text x="180" y="305" text-anchor="middle" fill="#0B241C" font-size="10" font-weight="500">Sidra Medicine</text>
+    <!-- Home Services - top right -->
+    <circle cx="362" cy="108" r="50" fill="#1A3530"/>
+    <text x="362" y="101" text-anchor="middle" fill="white" font-size="11" font-weight="500">Home Services</text>
+    <text x="362" y="117" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-size="10">+54%</text>
 
-    <circle cx="280" cy="320" r="37" fill="#C4B49A"/>
-    <text x="280" y="325" text-anchor="middle" fill="#0B241C" font-size="9" font-weight="500">HBKU</text>
+    <!-- Food & Beverage - left side -->
+    <circle cx="68" cy="125" r="47" fill="#4A6B8A"/>
+    <text x="68" y="118" text-anchor="middle" fill="white" font-size="10" font-weight="500">Food &</text>
+    <text x="68" y="132" text-anchor="middle" fill="white" font-size="10" font-weight="500">Beverage</text>
+    <text x="68" y="148" text-anchor="middle" fill="rgba(255,255,255,0.8)" font-size="9">+51%</text>
 
-    <!-- Small bubbles -->
-    <circle cx="400" cy="80" r="28" fill="#9AB3A9"/>
-    <text x="400" y="83" text-anchor="middle" fill="white" font-size="8" font-weight="500">QNL</text>
-
-    <circle cx="60" cy="280" r="23" fill="#D4C5B0"/>
-    <text x="60" y="283" text-anchor="middle" fill="#0B241C" font-size="7" font-weight="500">QSTP</text>
+    <!-- Crypto - center left -->
+    <circle cx="175" cy="230" r="39" fill="#C4B49A"/>
+    <text x="175" y="225" text-anchor="middle" fill="#0B241C" font-size="10" font-weight="500">Crypto</text>
+    <text x="175" y="240" text-anchor="middle" fill="#2A4639" font-size="9">+36%</text>
   </svg>
 </div>`,
 
@@ -410,6 +462,7 @@
             { id: 'horizontal-bar', label: 'Horizontal Bar' },
             { id: 'horizontal-stacked', label: 'Horizontal Stacked' },
             { id: 'vertical-bar', label: 'Vertical Bar' },
+            { id: 'vertical-bar-labeled', label: 'Vertical Bar (Labeled)' },
             { id: 'comparison-bar', label: 'Comparison Bar' },
             { id: 'vertical-stacked', label: 'Vertical Stacked' },
             { id: 'donut', label: 'Donut Chart' },
@@ -885,6 +938,83 @@
             {data.map((item, i) => (
               <div key={i} className="flex-1 text-center">
                 <span className="text-xs text-[#4A7561]">{item.month}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      );
+    };
+
+    // VERTICAL BAR CHART WITH LABELS
+    const VerticalBarLabeledChart = () => {
+      const [hovered, setHovered] = useState(null);
+
+      const data = [
+        { label: 'Productivity', value: 12.2 },
+        { label: 'Speed', value: 25.1 },
+        { label: 'Quality', value: 40 },
+      ];
+
+      const maxValue = 40;
+      const chartHeight = 200;
+      const yAxisLabels = ['40%', '30%', '20%', '10%', '0%'];
+
+      return (
+        <div>
+          <div className="flex">
+            {/* Y-axis labels */}
+            <div className="flex flex-col justify-between text-xs text-[#4A7561] pr-3 w-10 text-right" style={{ height: `${chartHeight}px` }}>
+              {yAxisLabels.map((label, i) => (
+                <span key={i}>{label}</span>
+              ))}
+            </div>
+
+            {/* Chart area with grid lines and bars */}
+            <div className="flex-1 relative" style={{ height: `${chartHeight}px` }}>
+              {/* Grid lines */}
+              <div className="absolute inset-0 flex flex-col justify-between pointer-events-none">
+                {[0,1,2,3,4].map(i => <div key={i} className="border-t border-dashed border-[#E8E8E5]" />)}
+              </div>
+
+              {/* Bars */}
+              <div className="flex items-end gap-6 h-full relative">
+                {data.map((item, i) => {
+                  const barHeight = (item.value / maxValue) * chartHeight;
+                  return (
+                    <div
+                      key={i}
+                      className="flex-1 flex flex-col items-center cursor-pointer"
+                      onMouseEnter={() => setHovered(i)}
+                      onMouseLeave={() => setHovered(null)}
+                    >
+                      <span
+                        className="text-xs font-semibold text-white px-3 py-1 rounded-full mb-2 transition-all duration-200"
+                        style={{
+                          backgroundColor: '#434340',
+                          opacity: hovered !== null && hovered !== i ? 0.4 : 1
+                        }}
+                      >
+                        {item.value}%
+                      </span>
+                      <div
+                        className="w-full rounded-t transition-all duration-200"
+                        style={{
+                          height: `${barHeight}px`,
+                          backgroundColor: '#889A68',
+                          opacity: hovered !== null && hovered !== i ? 0.4 : 1
+                        }}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+          </div>
+
+          <div className="flex gap-6 mt-3 ml-10">
+            {data.map((item, i) => (
+              <div key={i} className="flex-1 text-center">
+                <span className="text-xs text-[#4A7561]">{item.label}</span>
               </div>
             ))}
           </div>
@@ -1435,16 +1565,14 @@
     const BubbleChart = () => {
       const [hovered, setHovered] = useState(null);
 
-      // Scale factor of 1.15 (15% larger)
-      const scaleFactor = 1.15;
-
+      // Non-overlapping bubble positions - very tight spacing, sizes +5%
       const data = [
-        { name: 'Aerospace', value: 147, size: 180 * scaleFactor, x: 280, y: 230, color: '#B8B4D4' },
-        { name: 'Cleantech', value: 91, size: 130 * scaleFactor, x: 180, y: 100, color: '#6B7D3D' },
-        { name: 'Security', value: 91, size: 120 * scaleFactor, x: 100, y: 260, color: '#D4847A' },
-        { name: 'Home Services', value: 54, size: 80 * scaleFactor, x: 370, y: 85, color: '#1A3530' },
-        { name: 'Food & Beverage', value: 51, size: 75 * scaleFactor, x: 70, y: 130, color: '#4A6B8A' },
-        { name: 'Crypto', value: 36, size: 60 * scaleFactor, x: 160, y: 200, color: '#C4B49A' },
+        { name: 'Aerospace', value: 147, size: 220, x: 295, y: 340, color: '#B8B4D4' },
+        { name: 'Cleantech', value: 91, size: 158, x: 210, y: 95, color: '#6B7D3D' },
+        { name: 'Security', value: 91, size: 142, x: 100, y: 310, color: '#D4847A' },
+        { name: 'Home Services', value: 54, size: 100, x: 362, y: 108, color: '#1A3530' },
+        { name: 'Food & Beverage', value: 51, size: 95, x: 68, y: 125, color: '#4A6B8A' },
+        { name: 'Crypto', value: 36, size: 79, x: 175, y: 230, color: '#C4B49A' },
       ];
 
       // Helper to wrap text into multiple lines based on available width
@@ -1457,7 +1585,6 @@
 
         words.forEach(word => {
           const testLine = currentLine ? `${currentLine} ${word}` : word;
-          // Approximate character width (adjust based on font)
           const testWidth = testLine.length * 6;
 
           if (testWidth > maxWidth && currentLine) {
@@ -1476,17 +1603,17 @@
       const getFontSize = (size, isValue = false) => {
         const radius = size / 2;
         if (isValue) {
-          return Math.max(9, Math.min(14, radius * 0.16));
+          return Math.max(10, Math.min(16, radius * 0.18));
         }
-        return Math.max(9, Math.min(14, radius * 0.18));
+        return Math.max(10, Math.min(16, radius * 0.20));
       };
 
       return (
-        <div className="relative" style={{ height: '400px' }}>
-          <svg viewBox="0 0 470 400" className="w-full h-full">
+        <div className="relative" style={{ height: '460px' }}>
+          <svg viewBox="0 0 470 460" className="w-full h-full">
             {data.map((item, i) => {
               const radius = item.size / 2;
-              const maxTextWidth = radius * 1.4; // Allow text to use ~70% of diameter
+              const maxTextWidth = radius * 1.4;
               const nameLines = wrapText(item.name, maxTextWidth);
               const nameFontSize = getFontSize(item.size);
               const valueFontSize = getFontSize(item.size, true);
@@ -1535,7 +1662,7 @@
               );
             })}
           </svg>
-          
+
           {hovered !== null && (
             <div className="absolute top-4 right-4 bg-white border border-[#E8E8E5] rounded-lg shadow-lg px-4 py-3">
               <div className="flex items-center gap-2 mb-1">
@@ -1800,7 +1927,7 @@
             <div className="bg-[#11362A] text-white px-8 py-6">
               <div className="max-w-4xl">
                 <h1 className="text-2xl font-semibold">QF Design System</h1>
-                <p className="text-white/60 text-sm mt-1">Communications Dashboard — Color & Chart Reference v2.3</p>
+                <p className="text-white/60 text-sm mt-1">Communications Dashboard — Color & Chart Reference v2.4</p>
               </div>
             </div>
 
@@ -1929,6 +2056,15 @@
               code={codeSnippets.verticalBar}
             >
               <VerticalBarChart />
+            </SectionCard>
+
+            <SectionCard
+              id="vertical-bar-labeled"
+              title="Vertical Bar Chart (Labeled)"
+              description="Categorical comparison with value labels on top of bars. No Y-axis needed."
+              code={codeSnippets.verticalBarLabeled}
+            >
+              <VerticalBarLabeledChart />
             </SectionCard>
 
             <SectionCard
@@ -2179,6 +2315,16 @@
               <div className="space-y-4">
                 <div className="border-l-2 border-[#889A68] pl-4">
                   <div className="flex items-center gap-2 mb-1">
+                    <span className="text-sm font-semibold text-[#0B241C]">v2.4</span>
+                    <span className="text-xs text-[#9AB3A9]">December 14, 2024</span>
+                  </div>
+                  <ul className="text-sm text-[#4A7561] space-y-1">
+                    <li>• Added Vertical Bar Chart (Labeled) with Y-axis and value labels on bars</li>
+                    <li>• Updated Bubble Chart with non-overlapping tight layout</li>
+                  </ul>
+                </div>
+                <div className="border-l-2 border-[#D6D6D2] pl-4">
+                  <div className="flex items-center gap-2 mb-1">
                     <span className="text-sm font-semibold text-[#0B241C]">v2.3</span>
                     <span className="text-xs text-[#9AB3A9]">December 11, 2024</span>
                   </div>
@@ -2226,7 +2372,7 @@
 
             {/* Footer */}
             <div className="mt-8 text-center text-sm text-[#9AB3A9]">
-              Click any color swatch to copy hex value • QF Design System v2.3
+              Click any color swatch to copy hex value • QF Design System v2.4
             </div>
             </div>
           </div>
