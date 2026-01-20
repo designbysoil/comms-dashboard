@@ -16,6 +16,20 @@
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   
   <style>
+    /* QF Font - Variable Font */
+    @font-face {
+      font-family: 'QF Font';
+      src: url('QF-VF.woff2') format('woff2');
+      font-weight: 100 900;
+      font-style: normal;
+      font-display: swap;
+    }
+
+    /* Apply QF Font to body */
+    body {
+      font-family: 'QF Font', system-ui, -apple-system, sans-serif;
+    }
+
     /* Smooth scrolling */
     html { scroll-behavior: smooth; }
   </style>
@@ -27,7 +41,7 @@
     const { useState } = React;
 
     // =============================================================================
-    // QF COMMUNICATIONS DASHBOARD — DESIGN SYSTEM v2.4
+    // QF COMMUNICATIONS DASHBOARD — DESIGN SYSTEM v2.6
     // =============================================================================
 
     // ─────────────────────────────────────────────────────────────────────────────
@@ -100,6 +114,28 @@
         <polygon points="13 24 4 15 5.414 13.586 13 21.171 26.586 7.586 28 9 13 24"/>
       </svg>
     );
+
+    // Download icon (IBM Carbon)
+    const DownloadIcon = () => (
+      <svg width="16" height="16" viewBox="0 0 32 32" fill="currentColor">
+        <path d="M26 24v4H6v-4H4v4a2 2 0 0 0 2 2h20a2 2 0 0 0 2-2v-4z"/>
+        <polygon points="16 22 6 12 7.41 10.59 15 18.17 15 2 17 2 17 18.17 24.59 10.59 26 12 16 22"/>
+      </svg>
+    );
+
+    // Function to download the HTML file
+    const downloadDesignSystem = () => {
+      const htmlContent = document.documentElement.outerHTML;
+      const blob = new Blob(['<!DOCTYPE html>\n' + htmlContent], { type: 'text/html' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = 'qf-design-system.html';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    };
 
     // Code snippets for charts (platform-agnostic HTML with inline styles)
     const codeSnippets = {
@@ -425,148 +461,142 @@
       </section>
     );
 
-    // SIDEBAR NAVIGATION (Figma MCP style)
+    // SIDEBAR NAVIGATION (Art Direction Guide style - exact match)
     const Sidebar = () => {
-      const [activeSection, setActiveSection] = useState('');
-      const [expandedSections, setExpandedSections] = useState({
-        colors: true,
-        charts: true,
-        reference: true,
-      });
+      const [activeId, setActiveId] = useState('');
 
-      const toggleSection = (sectionId) => {
-        setExpandedSections(prev => ({
-          ...prev,
-          [sectionId]: !prev[sectionId]
-        }));
-      };
-
-      const sections = [
-        {
-          id: 'colors',
-          label: 'Colors',
-          children: [
-            { id: 'sidra-green', label: 'Sidra Green' },
-            { id: 'sage', label: 'Sage' },
-            { id: 'neutrals', label: 'Neutrals' },
-            { id: 'categorical', label: 'Categorical' },
-            { id: 'semantic', label: 'Semantic' },
-          ]
-        },
-        {
-          id: 'charts',
-          label: 'Charts',
-          children: [
-            { id: 'stat-card', label: 'Stat Card' },
-            { id: 'trend-line', label: 'Trend Line' },
-            { id: 'horizontal-bar', label: 'Horizontal Bar' },
-            { id: 'horizontal-stacked', label: 'Horizontal Stacked' },
-            { id: 'vertical-bar', label: 'Vertical Bar' },
-            { id: 'vertical-bar-labeled', label: 'Vertical Bar (Labeled)' },
-            { id: 'comparison-bar', label: 'Comparison Bar' },
-            { id: 'vertical-stacked', label: 'Vertical Stacked' },
-            { id: 'donut', label: 'Donut Chart' },
-            { id: 'treemap', label: 'Treemap' },
-            { id: 'index-scale', label: 'Index Scale' },
-            { id: 'waffle', label: 'Waffle Chart' },
-            { id: 'bubble', label: 'Bubble Chart' },
-            { id: 'post', label: 'Post' },
-          ]
-        },
-        {
-          id: 'reference',
-          label: 'Reference',
-          children: [
-            { id: 'font', label: 'Font' },
-            { id: 'typography', label: 'Typography' },
-            { id: 'spacing', label: 'Spacing' },
-            { id: 'icons', label: 'Icons' },
-            { id: 'changelog', label: 'Changelog' },
-          ]
-        },
+      // Flat list of all nav items for scroll tracking
+      const navItems = [
+        { id: 'colors', label: 'Colors', isSection: true },
+        { id: 'sidra-green', label: 'Sidra Green', isSection: false },
+        { id: 'sage', label: 'Sage', isSection: false },
+        { id: 'neutrals', label: 'Neutrals', isSection: false },
+        { id: 'categorical', label: 'Categorical', isSection: false },
+        { id: 'semantic', label: 'Semantic', isSection: false },
+        { id: 'charts', label: 'Charts', isSection: true },
+        { id: 'stat-card', label: 'Stat Card', isSection: false },
+        { id: 'trend-line', label: 'Trend Line', isSection: false },
+        { id: 'horizontal-bar', label: 'Horizontal Bar', isSection: false },
+        { id: 'horizontal-stacked', label: 'Horizontal Stacked', isSection: false },
+        { id: 'vertical-bar', label: 'Vertical Bar', isSection: false },
+        { id: 'vertical-bar-labeled', label: 'Vertical Bar (Labeled)', isSection: false },
+        { id: 'comparison-bar', label: 'Comparison Bar', isSection: false },
+        { id: 'vertical-stacked', label: 'Vertical Stacked', isSection: false },
+        { id: 'donut', label: 'Donut Chart', isSection: false },
+        { id: 'treemap', label: 'Treemap', isSection: false },
+        { id: 'index-scale', label: 'Index Scale', isSection: false },
+        { id: 'waffle', label: 'Waffle Chart', isSection: false },
+        { id: 'bubble', label: 'Bubble Chart', isSection: false },
+        { id: 'post', label: 'Post', isSection: false },
+        { id: 'reference', label: 'Reference', isSection: true },
+        { id: 'font', label: 'Font', isSection: false },
+        { id: 'typography', label: 'Typography', isSection: false },
+        { id: 'spacing', label: 'Spacing', isSection: false },
+        { id: 'icons', label: 'Icons', isSection: false },
+        { id: 'changelog', label: 'Changelog', isSection: false },
       ];
-
-      // Get all child IDs for scroll tracking
-      const allChildIds = sections.flatMap(s => s.children.map(c => c.id));
 
       // Track active section on scroll
       React.useEffect(() => {
-        const handleScroll = () => {
-          for (const id of allChildIds) {
-            const el = document.getElementById(id);
+        const updateActiveNav = () => {
+          const scrollTop = window.scrollY;
+          let activeItem = null;
+
+          // Find the section currently in view (iterate backwards to find last one above threshold)
+          for (let i = navItems.length - 1; i >= 0; i--) {
+            const item = navItems[i];
+            const el = document.getElementById(item.id);
             if (el) {
               const rect = el.getBoundingClientRect();
-              if (rect.top <= 100 && rect.bottom > 100) {
-                setActiveSection(id);
+              const sectionTop = rect.top + scrollTop;
+              if (scrollTop >= sectionTop - 100) {
+                activeItem = item;
                 break;
               }
             }
           }
+
+          if (activeItem) {
+            setActiveId(activeItem.id);
+          }
         };
+
+        // Initial check
+        updateActiveNav();
+
+        // Throttled scroll handler
+        let ticking = false;
+        const handleScroll = () => {
+          if (!ticking) {
+            window.requestAnimationFrame(() => {
+              updateActiveNav();
+              ticking = false;
+            });
+            ticking = true;
+          }
+        };
+
         window.addEventListener('scroll', handleScroll);
-        handleScroll();
         return () => window.removeEventListener('scroll', handleScroll);
       }, []);
 
-      // Chevron icon
-      const ChevronIcon = ({ isOpen }) => (
-        <svg
-          width="12"
-          height="12"
-          viewBox="0 0 12 12"
-          fill="none"
-          className={`transition-transform duration-200 ${isOpen ? 'rotate-0' : '-rotate-90'}`}
-        >
-          <path
-            d="M2.5 4.5L6 8L9.5 4.5"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      );
-
       return (
-        <div className="fixed left-0 top-0 h-screen w-56 bg-white border-r border-[#E8E8E5] z-50 overflow-y-auto">
+        <div className="fixed left-0 top-0 h-screen w-52 z-50 overflow-y-auto pt-8 pl-6">
           {/* Header */}
-          <div className="px-5 py-4 border-b border-[#E8E8E5]">
-            <p className="text-[11px] font-semibold uppercase tracking-wider text-[#737370]">
-              QF Design System
-            </p>
-          </div>
+          <p className="text-xs font-medium text-[#9A9A96] uppercase tracking-wider mb-3 mt-4">
+            QF Design System
+          </p>
 
-          {/* Navigation */}
-          <nav className="py-4">
-            {sections.map((section, sectionIndex) => (
-              <div key={section.id} className={sectionIndex > 0 ? 'mt-2 pt-2 border-t border-[#E8E8E5] mx-5' : ''}>
-                {/* Section header with toggle */}
-                <button
-                  onClick={() => toggleSection(section.id)}
-                  className="w-full flex items-center justify-between px-5 py-2 text-left hover:bg-[#FAFAF9] transition-colors"
-                >
-                  <span className="text-sm font-medium text-[#1A1A18]">{section.label}</span>
-                  <ChevronIcon isOpen={expandedSections[section.id]} />
-                </button>
+          {/* Navigation with continuous vertical bar */}
+          <nav style={{ borderLeft: '2px solid #E0E0DC' }}>
+            {navItems.map((item) => {
+              const isActive = activeId === item.id;
 
-                {/* Children */}
-                <div className={`overflow-hidden transition-all duration-200 ${expandedSections[section.id] ? 'max-h-[500px] opacity-100' : 'max-h-0 opacity-0'}`}>
-                  {section.children.map((child) => (
-                    <a
-                      key={child.id}
-                      href={`#${child.id}`}
-                      className={`block pl-8 pr-5 py-1.5 text-sm transition-colors ${
-                        activeSection === child.id
-                          ? 'text-[#11362A] font-medium bg-[#F4F6F0]'
-                          : 'text-[#5C5C59] hover:text-[#1A1A18] hover:bg-[#FAFAF9]'
-                      }`}
-                    >
-                      {child.label}
-                    </a>
-                  ))}
-                </div>
-              </div>
-            ))}
+              if (item.isSection) {
+                // Section header style
+                return (
+                  <a
+                    key={item.id}
+                    href={`#${item.id}`}
+                    className="block hover:text-[#0B241C]"
+                    style={{
+                      position: 'relative',
+                      padding: '6px 20px 6px 14px',
+                      marginLeft: '-2px',
+                      fontSize: '13px',
+                      color: isActive ? '#0B241C' : '#737370',
+                      fontWeight: isActive ? '500' : 'normal',
+                      textDecoration: 'none',
+                      borderLeft: `2px solid ${isActive ? '#0B241C' : 'transparent'}`,
+                      transition: 'color 0.15s',
+                    }}
+                  >
+                    {item.label}
+                  </a>
+                );
+              } else {
+                // Sub-item style
+                return (
+                  <a
+                    key={item.id}
+                    href={`#${item.id}`}
+                    className="block hover:text-[#5C5C59]"
+                    style={{
+                      position: 'relative',
+                      padding: '4px 20px 4px 26px',
+                      marginLeft: '-2px',
+                      fontSize: '12px',
+                      color: isActive ? '#0B241C' : '#9A9A96',
+                      textDecoration: 'none',
+                      borderLeft: `2px solid ${isActive ? '#0B241C' : 'transparent'}`,
+                      transition: 'color 0.15s',
+                    }}
+                  >
+                    {item.label}
+                  </a>
+                );
+              }
+            })}
           </nav>
         </div>
       );
@@ -1917,21 +1947,30 @@
       ];
 
       return (
-        <div className="min-h-screen bg-[#F5F5F3]" style={{ fontFamily: "system-ui, -apple-system, sans-serif" }}>
+        <div className="min-h-screen bg-[#F5F5F3]">
           {/* Sidebar Navigation */}
           <Sidebar />
 
           {/* Main content area - offset for fixed sidebar */}
-          <div className="ml-56">
-            {/* Header */}
-            <div className="bg-[#11362A] text-white px-8 py-6">
-              <div className="max-w-4xl">
-                <h1 className="text-2xl font-semibold">QF Design System</h1>
-                <p className="text-white/60 text-sm mt-1">Communications Dashboard — Color & Chart Reference v2.4</p>
+          <div className="ml-52">
+            {/* Header - Art Direction Guide style, aligned with content */}
+            <div className="max-w-3xl mx-auto px-8 pt-10 pb-8">
+              <p className="text-sm text-[#9B9B97] mb-2">Qatar Foundation</p>
+              <div className="flex items-center gap-4 mb-2">
+                <h1 className="text-4xl font-semibold text-[#0B241C] tracking-tight">QF Design System</h1>
+                <button
+                  onClick={downloadDesignSystem}
+                  className="flex items-center gap-2 px-3 py-1.5 bg-[#F0F0ED] hover:bg-[#E8E8E5] rounded-lg transition-colors text-sm font-medium text-[#434340]"
+                  title="Download HTML for AI prompts"
+                >
+                  <DownloadIcon />
+                  <span>Download</span>
+                </button>
               </div>
+              <p className="text-[#9B9B97]">Communications Dashboard — Color & Chart Reference v2.6</p>
             </div>
 
-            <div className="max-w-4xl p-8">
+            <div className="max-w-3xl mx-auto px-8 pb-8">
 
             {/* COLOR PALETTES */}
             <div id="colors" className="mb-8 scroll-mt-6">
@@ -2314,6 +2353,27 @@
             <SectionCard id="changelog" title="Changelog" description="Version history and updates to the design system.">
               <div className="space-y-4">
                 <div className="border-l-2 border-[#889A68] pl-4">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-sm font-semibold text-[#0B241C]">v2.6</span>
+                    <span className="text-xs text-[#9AB3A9]">January 20, 2025</span>
+                  </div>
+                  <ul className="text-sm text-[#4A7561] space-y-1">
+                    <li>• Redesigned sidebar with minimal Art Direction Guide style</li>
+                    <li>• Updated header to clean white design with breadcrumb navigation</li>
+                    <li>• Centered content area in viewport for better readability</li>
+                    <li>• Added QF Font @font-face for proper brand typography</li>
+                  </ul>
+                </div>
+                <div className="border-l-2 border-[#D6D6D2] pl-4">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-sm font-semibold text-[#0B241C]">v2.6</span>
+                    <span className="text-xs text-[#9AB3A9]">January 20, 2025</span>
+                  </div>
+                  <ul className="text-sm text-[#4A7561] space-y-1">
+                    <li>• Added Download HTML button for use in AI prompts</li>
+                  </ul>
+                </div>
+                <div className="border-l-2 border-[#D6D6D2] pl-4">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-sm font-semibold text-[#0B241C]">v2.4</span>
                     <span className="text-xs text-[#9AB3A9]">December 14, 2024</span>
