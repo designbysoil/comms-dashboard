@@ -470,8 +470,9 @@
         { id: 'colors', label: 'Colors', isSection: true },
         { id: 'sidra-green', label: 'Sidra Green', isSection: false },
         { id: 'sage', label: 'Sage', isSection: false },
-        { id: 'teal', label: 'Teal', isSection: false },
+
         { id: 'neutrals', label: 'Neutrals', isSection: false },
+        { id: 'color-philosophy', label: 'Philosophy', isSection: false },
         { id: 'categorical', label: 'Categorical', isSection: false },
         { id: 'semantic', label: 'Semantic', isSection: false },
         { id: 'charts', label: 'Charts', isSection: true },
@@ -738,8 +739,8 @@
                       onMouseEnter={() => setHovered(i)}
                       onMouseLeave={() => setHovered(null)}
                     />
-                    <circle 
-                      cx={getX(i)} cy={getY(d.returning)} r="6" 
+                    <circle
+                      cx={getX(i)} cy={getY(d.returning)} r="6"
                       fill="white" stroke="#889A68" strokeWidth="2"
                       className="cursor-pointer"
                       onMouseEnter={() => setHovered(i)}
@@ -858,7 +859,7 @@
               <span className="text-[#2A4639]">All other respondents</span>
             </div>
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded" style={{ backgroundColor: '#BDC8AB' }} />
+              <div className="w-4 h-4 rounded" style={{ backgroundColor: '#889A68' }} />
               <span className="text-[#2A4639]">High performers</span>
             </div>
           </div>
@@ -893,7 +894,7 @@
                       className="h-full flex items-center justify-end pr-3"
                       style={{ 
                         width: `${item.groupB - item.groupA}%`,
-                        backgroundColor: '#BDC8AB'
+                        backgroundColor: '#889A68'
                       }}
                     >
                       <span className="text-white text-xs font-semibold px-3 py-1 rounded-full" style={{ backgroundColor: '#434340' }}>{item.groupB}</span>
@@ -1056,7 +1057,7 @@
     // COMPARISON BAR CHART
     const ComparisonBarChart = () => {
       const [hovered, setHovered] = useState(null);
-      
+
       const data = [
         { label: 'Info Retrieval', current: 73 },
         { label: 'Common Tasks', current: 71 },
@@ -1064,7 +1065,7 @@
         { label: 'Code Assist', current: 44 },
         { label: 'Meeting Summary', current: 26 },
       ];
-      
+
       return (
         <div>
           <div className="flex items-center gap-6 text-xs mb-4">
@@ -1077,10 +1078,10 @@
               <span className="text-[#2A4639]">Baseline (100%)</span>
             </div>
           </div>
-          
+
           <div className="space-y-3">
             {data.map((item, i) => (
-              <div 
+              <div
                 key={i}
                 className="relative cursor-pointer"
                 onMouseEnter={() => setHovered(i)}
@@ -1091,16 +1092,16 @@
                     <span className="text-xs text-[#4A7561]">{item.label}</span>
                   </div>
                   <div className="flex-1">
-                    <div 
+                    <div
                       className="relative h-8 rounded overflow-hidden transition-opacity duration-200"
-                      style={{ 
+                      style={{
                         backgroundColor: '#D6D6D2',
                         opacity: hovered !== null && hovered !== i ? 0.4 : 1
                       }}
                     >
-                      <div 
+                      <div
                         className="h-full rounded-l flex items-center justify-end pr-3"
-                        style={{ 
+                        style={{
                           width: `${item.current}%`,
                           backgroundColor: '#889A68'
                         }}
@@ -1119,7 +1120,7 @@
               </div>
             ))}
           </div>
-          
+
           <div className="flex items-center gap-4 mt-4">
             <div className="w-28" />
             <div className="flex-1 flex justify-between text-xs text-[#4A7561]">
@@ -1916,19 +1917,6 @@
         { name: '900', hex: '#24291B' },
       ];
 
-      const tealColors = [
-        { name: '50',  hex: '#EBF6F2' },
-        { name: '100', hex: '#C5E7DA' },
-        { name: '200', hex: '#9DD7C2' },
-        { name: '300', hex: '#6EC4AB' },
-        { name: '400', hex: '#3EB794' },
-        { name: '500', hex: '#00A896' },
-        { name: '600', hex: '#00857C' },
-        { name: '700', hex: '#006C65' },
-        { name: '800', hex: '#005450' },
-        { name: '900', hex: '#003835' },
-      ];
-
       const neutralColors = [
         { name: '50', hex: '#FAFAF9' },
         { name: '100', hex: '#F5F5F3' },
@@ -2031,145 +2019,6 @@
               </div>
             </SectionCard>
 
-            {/* Teal — Cool Bridge */}
-            <section id="teal" className="bg-white rounded-2xl p-8 mb-6 shadow-sm border border-[#E8E8E5] scroll-mt-6">
-              <div className="mb-6 flex items-center gap-3">
-                <div className="w-4 h-4 rounded" style={{ backgroundColor: '#00857C' }} />
-                <h2 className="text-lg font-semibold text-[#0B241C]">Teal — Cool Bridge</h2>
-                <span className="text-xs bg-[#EBF6F2] text-[#006C65] px-2 py-1 rounded-full font-medium border border-[#9DD7C2]">PANTONE 339C</span>
-              </div>
-              <p className="text-sm text-[#4A7561] mb-6">
-                Cool green-to-teal band that bridges Sidra Green and the neutral palette. Formally grounded in QF's secondary palette (PANTONE 339C). Use 600 as the primary teal value for data visualization, secondary accents, and multi-series charts where warm greens need a complementary hue.
-              </p>
-              <div className="grid grid-cols-5 md:grid-cols-10 gap-2 mb-8">
-                {tealColors.map((c, i) => (
-                  <div key={i} className="relative">
-                    <ColorSwatch color={c.hex} name={c.name} hex={c.hex} size="default" />
-                    {c.hex === '#00857C' && (
-                      <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-[#00857C] text-white text-[9px] px-1.5 py-0.5 rounded font-medium whitespace-nowrap">
-                        Primary
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-
-              {/* Hue bridge visual */}
-              <div className="mb-8">
-                <p className="text-sm font-medium text-[#0B241C] mb-3">Hue bridge — how Teal sits between Sidra Green and Neutral</p>
-                <div className="flex rounded-lg overflow-hidden h-10">
-                  {['#11362A','#2A4639','#385C4B','#4A7561','#6E9484','#00A896','#00857C','#006C65','#737370','#A8A8A3','#D6D6D2'].map((hex, i) => (
-                    <div key={i} className="flex-1" style={{ backgroundColor: hex }} />
-                  ))}
-                </div>
-                <div className="flex justify-between text-xs text-[#9AB3A9] mt-2">
-                  <span>← Sidra Green (warm)</span>
-                  <span>Teal (cool bridge)</span>
-                  <span>Neutral (warm gray) →</span>
-                </div>
-              </div>
-
-              {/* Usage in charts */}
-              <div className="grid md:grid-cols-2 gap-6">
-                <div className="bg-[#FAFAF9] rounded-xl p-6 border border-[#E8E8E5]">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-[#9AB3A9] mb-4">Multi-series bar chart</p>
-                  <div className="space-y-3">
-                    {[
-                      { label: 'Instagram', val: 85, color: '#11362A' },
-                      { label: 'Twitter/X', val: 68, color: '#00857C' },
-                      { label: 'LinkedIn',  val: 52, color: '#889A68' },
-                      { label: 'Facebook',  val: 40, color: '#D6D6D2' },
-                    ].map((item, i) => (
-                      <div key={i} className="space-y-1">
-                        <div className="flex justify-between text-xs text-[#4A7561]">
-                          <span>{item.label}</span>
-                          <span>{item.val}K</span>
-                        </div>
-                        <div className="h-5 rounded-sm" style={{ width: `${item.val}%`, backgroundColor: item.color }} />
-                      </div>
-                    ))}
-                  </div>
-                  <div className="mt-4 flex flex-wrap gap-3 text-xs">
-                    {[
-                      { label: 'Sidra Green', color: '#11362A' },
-                      { label: 'Teal 600', color: '#00857C' },
-                      { label: 'Sage 500', color: '#889A68' },
-                      { label: 'Neutral 300', color: '#D6D6D2' },
-                    ].map((l, i) => (
-                      <div key={i} className="flex items-center gap-1.5">
-                        <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: l.color }} />
-                        <span className="text-[#4A7561]">{l.label}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="bg-[#FAFAF9] rounded-xl p-6 border border-[#E8E8E5]">
-                  <p className="text-xs font-semibold uppercase tracking-wider text-[#9AB3A9] mb-4">Donut — platform followers</p>
-                  <div className="flex items-center gap-4">
-                    <div className="relative w-32 h-32 shrink-0">
-                      <svg viewBox="0 0 100 100" className="w-full h-full -rotate-90">
-                        {[
-                          { color: '#11362A', pct: 38, off: 0 },
-                          { color: '#00857C', pct: 28, off: 38 },
-                          { color: '#889A68', pct: 20, off: 66 },
-                          { color: '#D6D6D2', pct: 14, off: 86 },
-                        ].map((s, i) => (
-                          <circle key={i} cx="50" cy="50" r="40" fill="none"
-                            stroke={s.color} strokeWidth="20"
-                            strokeDasharray={`${s.pct * 2.51} 251`}
-                            strokeDashoffset={`${-s.off * 2.51}`}
-                          />
-                        ))}
-                      </svg>
-                      <div className="absolute inset-0 flex flex-col items-center justify-center">
-                        <p className="text-base font-light text-[#0B241C]">766K</p>
-                        <p className="text-[9px] text-[#4A7561]">followers</p>
-                      </div>
-                    </div>
-                    <div className="space-y-2 flex-1">
-                      {[
-                        { name: 'Instagram', color: '#11362A', pct: '38%' },
-                        { name: 'Twitter/X', color: '#00857C', pct: '28%' },
-                        { name: 'LinkedIn',  color: '#889A68', pct: '20%' },
-                        { name: 'Facebook',  color: '#D6D6D2', pct: '14%' },
-                      ].map((item, i) => (
-                        <div key={i} className="flex items-center justify-between">
-                          <div className="flex items-center gap-2">
-                            <div className="w-2.5 h-2.5 rounded-full" style={{ backgroundColor: item.color }} />
-                            <span className="text-xs text-[#0B241C]">{item.name}</span>
-                          </div>
-                          <span className="text-xs font-medium text-[#0B241C]">{item.pct}</span>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Teal usage tokens */}
-              <div className="mt-8 p-6 bg-white rounded-xl border border-[#E8E8E5]">
-                <p className="text-sm font-medium text-[#0B241C] mb-4">Teal Usage Tokens</p>
-                <div className="grid md:grid-cols-4 gap-4">
-                  {[
-                    { stop: '600', hex: '#00857C', role: 'Primary teal', usage: 'Data series, accents' },
-                    { stop: '400', hex: '#3EB794', role: 'Teal mid', usage: 'Hover, highlights' },
-                    { stop: '200', hex: '#9DD7C2', role: 'Teal light', usage: 'Backgrounds, fills' },
-                    { stop: '50',  hex: '#EBF6F2', role: 'Teal subtle', usage: 'Tag backgrounds' },
-                  ].map((t, i) => (
-                    <div key={i} className="flex items-center gap-3">
-                      <div className="w-10 h-10 rounded-lg shrink-0" style={{ backgroundColor: t.hex }} />
-                      <div>
-                        <p className="font-mono text-xs text-[#4A7561]">{t.hex}</p>
-                        <p className="text-xs text-[#9AB3A9]">{t.role}</p>
-                        <p className="text-xs text-[#D6D6D2]">{t.usage}</p>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </section>
-
             <SectionCard
               id="neutrals"
               title="Neutrals — Warm Gray"
@@ -2178,6 +2027,102 @@
               <div className="grid grid-cols-5 md:grid-cols-10 gap-2">
                 {neutralColors.map((c, i) => (
                   <ColorSwatch key={i} color={c.hex} name={c.name} hex={c.hex} size="default" />
+                ))}
+              </div>
+            </SectionCard>
+
+            <SectionCard
+              id="color-philosophy"
+              title="Color Philosophy"
+              description="Why this palette looks the way it does, and the logic behind the Sidra Green ramp."
+            >
+              <div className="divide-y divide-[#E8E8E5] border-t border-b border-[#E8E8E5]">
+                {[
+                  {
+                    q: 'Why does this palette look the way it does?',
+                    a: (
+                      <>
+                        <p>This system was designed for dashboards — screens where people come to read data, make decisions, and understand patterns at a glance. That context shapes every color choice.</p>
+                        <p>Dashboards are not marketing materials. The job of color here is not to excite or attract attention — it's to create enough visual calm that the data can do the talking. When colors compete with numbers, people have to work harder to extract meaning. When colors recede into the background, the numbers float forward naturally.</p>
+                        <p>This is why the palette is deliberately desaturated and low-contrast across surfaces, text, and secondary elements. It's not a limitation — it's the point.</p>
+                      </>
+                    ),
+                  },
+                  {
+                    q: 'Why does Sage exist alongside Sidra Green?',
+                    a: (
+                      <>
+                        <p>Sidra Green (#11362A) is a rich, dark brand color. It works well for UI chrome — buttons, navigation, interactive elements — but it's too dominant to be used as a sequential data color. If you tried to build a heatmap or a performance tier scale from just the Primary ramp, the dark end would carry too much visual weight and the light end would read as empty rather than low.</p>
+                        <p>Sage solves this. It's a lighter, more olive-green hue that shares the green family without carrying the brand weight of Sidra Green. On a sequential scale — low to excellent, sparse to dense — Sage lets the gradient breathe. Viewers can read intensity across the scale without the top end feeling aggressive.</p>
+                        <p>In short: Sidra Green is the brand voice. Sage is the data voice. They're related but they serve different masters.</p>
+                      </>
+                    ),
+                  },
+                  {
+                    q: 'Why warm neutral grays instead of cool ones?',
+                    a: (
+                      <p>Standard blue-gray neutrals (the default in most design tools) would clash with a green-dominant palette — they introduce a cool, slightly medical quality that fights the warmth of QF's brand identity. The neutrals here are cream-tinted to sit harmoniously next to green without drawing attention to themselves. The previous-period color in comparison charts (#D6D6D2) needs to be present but passive — warm gray achieves this where cool gray would compete.</p>
+                    ),
+                  },
+                  {
+                    q: 'What does "flat and desaturated" achieve in practice?',
+                    a: (
+                      <>
+                        <ul className="list-disc pl-5 space-y-1">
+                          <li>Users can spend extended time with dashboards without eye fatigue</li>
+                          <li>Data points and trend lines stand out against muted surfaces</li>
+                          <li>The hierarchy of information is controlled by value (light/dark) rather than chroma (saturation) — which is more reliable across display types and vision differences</li>
+                          <li>Charts remain legible when printed or screenshotted in low-color contexts</li>
+                        </ul>
+                        <p>The palette was not built for a brand presentation slide or a poster. It was built to help a communications analyst understand whether this month's engagement rate went up or down — clearly, quickly, and without friction.</p>
+                      </>
+                    ),
+                  },
+                  {
+                    q: 'Why is the Sidra Green ramp anchored at 800, not 500?',
+                    a: (
+                      <p>Most color systems place the "base" color at 500 — the midpoint. This one anchors Sidra Green at 800, deliberately in the heavy-dark end of the scale. That's a deliberate brand decision: dark green reads as authoritative, grounded, institutional — which is appropriate for QF. It also means the majority of the ramp (50 through 700) exists as lighter derivatives, giving you a wide range of usable tones above the brand color.</p>
+                    ),
+                  },
+                  {
+                    q: 'How does the ramp serve two purposes simultaneously?',
+                    a: (
+                      <p>It's not just a brand ramp — it doubles as the text color system. Text colors are derived from this ramp rather than from a separate gray scale: 900 for headings, 700 for secondary text, 500 for captions, 300 for disabled/muted. That's four stops, each a perceptible step lighter, all carrying a green undertone. This is why text never feels generic or disconnected from the brand — it's literally the same color family, just lighter.</p>
+                    ),
+                  },
+                  {
+                    q: 'Why is 900 darker than the brand color?',
+                    a: (
+                      <p>Having a stop darker than 800 means the darkest text (#0B241C) isn't the brand color itself — it's a slightly deeper shade. This separation matters: buttons and headings can both be "dark green" without being identical, which preserves hierarchy between interactive elements and text.</p>
+                    ),
+                  },
+                  {
+                    q: 'How is the light end (50–200) calibrated?',
+                    a: (
+                      <>
+                        <p>50 and 100 are nearly white with a barely-perceptible green tint — usable for hover backgrounds, selected states, and subtle fills without introducing obvious color. 200 and 300 start becoming visible, which is why they're used for muted text and disabled states rather than backgrounds.</p>
+                        <p className="italic text-[#4A7561]">The underlying logic in one line: build a ramp where the brand lives near the dark end, derive all text from the same ramp, and let the light half handle UI states and hover surfaces.</p>
+                      </>
+                    ),
+                  },
+                ].map((item, i) => (
+                  <details key={i} className="group py-4">
+                    <summary className="flex items-center justify-between cursor-pointer list-none text-sm font-medium text-[#0B241C] hover:text-[#11362A]">
+                      <span>{item.q}</span>
+                      <svg
+                        className="w-4 h-4 text-[#4A7561] transition-transform duration-200 group-open:rotate-180 flex-shrink-0 ml-4"
+                        viewBox="0 0 20 20"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                      >
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M6 8l4 4 4-4" />
+                      </svg>
+                    </summary>
+                    <div className="mt-3 space-y-3 text-sm text-[#2A4639] leading-relaxed">
+                      {item.a}
+                    </div>
+                  </details>
                 ))}
               </div>
             </SectionCard>
@@ -2505,17 +2450,13 @@
 
             <SectionCard id="changelog" title="Changelog" description="Version history and updates to the design system.">
               <div className="space-y-4">
-                <div className="border-l-2 border-[#00857C] pl-4">
+                <div className="border-l-2 border-[#889A68] pl-4">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-sm font-semibold text-[#0B241C]">v2.7</span>
-                    <span className="text-xs text-[#9AB3A9]">March 5, 2026</span>
+                    <span className="text-xs text-[#9AB3A9]">March 8, 2026</span>
                   </div>
                   <ul className="text-sm text-[#4A7561] space-y-1">
-                    <li>• Added Teal — Cool Bridge color band (PANTONE 339C) between Sage and Neutrals</li>
-                    <li>• Full 10-stop ramp from #EBF6F2 (50) to #003835 (900), primary at 600 (#00857C)</li>
-                    <li>• Hue bridge strip showing Sidra Green → Teal → Neutral transition</li>
-                    <li>• Multi-series bar chart and donut chart examples with Teal in the palette</li>
-                    <li>• Teal usage tokens for 600, 400, 200, and 50 stops</li>
+                    <li>• Removed Teal accent palette — reverted stat cards and categorical colors to original values</li>
                   </ul>
                 </div>
                 <div className="border-l-2 border-[#889A68] pl-4">
