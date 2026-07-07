@@ -142,19 +142,29 @@
     const CHART_THEMES = {
       default: {
         key: 'default', label: 'Default', shortName: 'Sidra',
-        bar: '#4A7561', barName: 'Sidra Green',            // single-color bar fills (Sidra 500)
-        series2: '#6E9484', series2Name: 'light Sidra Green', // second series / stacked segment
-        pill: '#11362A',                                    // value pills sitting on bars (Sidra 800)
-        stackedPill: '#737370',                             // stacked bar pills (sit on #11362A + #6E9484)
-        multiGroup: '#6E9484',                              // usage-guide multi-group swatch
+        bar: '#046B54', barName: 'Sidra Green',             // single-color bar fills (Sidra 700)
+        series1: '#034638', series1Name: 'Sidra Green',     // dark/primary series (Sidra 800, brand)
+        series2: '#2DDBB6', series2Name: 'bright Sidra',    // second series / stacked segment (Sidra 400)
+        seriesText: '#07AF8B',                              // second-series tooltip text (Sidra 600)
+        pill: '#022921',                                    // value pills sitting on bars (Sidra 900)
+        stackedPill: '#737370',                             // stacked bar pills (sit on dark + bright segments)
+        multiGroup: '#2DDBB6',                              // usage-guide multi-group swatch
+        multi5: ['#022921', '#046B54', '#07AF8B', '#2DDBB6', '#B7EFE3'],           // vertical stacked, sequential
+        donut6: ['#022921', '#046B54', '#07AF8B', '#2DDBB6', '#8FE6D3', '#E2F9F4'], // donut, sequential
+        scaleName: 'Sidra Green dark to light',
       },
       sage: {
         key: 'sage', label: 'Sage', shortName: 'Sage',
         bar: '#889A68', barName: 'Sage',
+        series1: '#11362A', series1Name: 'Sidra Green Muted',
         series2: '#889A68', series2Name: 'Sage',
+        seriesText: '#889A68',
         pill: '#434340',
         stackedPill: '#434340',
         multiGroup: '#BDC8AB',
+        multi5: ['#11362A', '#385C4B', '#6E9484', '#A8A8A3', '#D6D6D2'],
+        donut6: ['#11362A', '#385C4B', '#6E9484', '#A8A8A3', '#D6D6D2', '#E8E8E5'],
+        scaleName: 'muted Sidra dark to light, continuing into light Warm Grays',
       },
     };
     const ChartThemeContext = React.createContext(CHART_THEMES.default);
@@ -491,8 +501,8 @@
       const navItems = [
         { id: 'colors', label: 'Colors', isSection: true },
         { id: 'sidra-green', label: 'Sidra Green', isSection: false },
+        { id: 'sidra-muted', label: 'Sidra Muted', isSection: false },
         { id: 'sage', label: 'Sage', isSection: false },
-        { id: 'teal', label: 'Teal', isSection: false },
         { id: 'yellow', label: 'Yellow', isSection: false },
         { id: 'neutrals', label: 'Neutrals', isSection: false },
         { id: 'color-philosophy', label: 'Philosophy', isSection: false },
@@ -731,7 +741,7 @@
         <div>
           <div className="flex items-center gap-8 mb-4">
             <div className="flex items-center gap-2">
-              <div className="w-4 h-0.5" style={{ backgroundColor: '#11362A' }} />
+              <div className="w-4 h-0.5" style={{ backgroundColor: theme.series1 }} />
               <span className="text-sm text-[#2A4639]">New Visitors</span>
             </div>
             <div className="flex items-center gap-2">
@@ -751,14 +761,14 @@
               </div>
               
               <svg viewBox={`0 0 ${chartWidth} ${chartHeight}`} className="w-full h-full overflow-visible">
-                <path d={newVisitorsPath} fill="none" stroke="#11362A" strokeWidth="2" />
+                <path d={newVisitorsPath} fill="none" stroke={theme.series1} strokeWidth="2" />
                 <path d={returningPath} fill="none" stroke={theme.series2} strokeWidth="2" />
                 
                 {data.map((d, i) => (
                   <g key={i}>
                     <circle 
                       cx={getX(i)} cy={getY(d.newVisitors)} r="6" 
-                      fill="white" stroke="#11362A" strokeWidth="2"
+                      fill="white" stroke={theme.series1} strokeWidth="2"
                       className="cursor-pointer"
                       onMouseEnter={() => setHovered(i)}
                       onMouseLeave={() => setHovered(null)}
@@ -780,8 +790,8 @@
                   style={{ left: `${(hovered / (data.length - 1)) * 100}%`, top: '20%', transform: 'translateX(-50%)' }}
                 >
                   <p className="text-sm font-medium text-[#0B241C] mb-2">{data[hovered].month}</p>
-                  <p className="text-sm text-[#11362A]">New: {data[hovered].newVisitors.toLocaleString()}</p>
-                  <p className="text-sm" style={{ color: theme.series2 }}>Returning: {data[hovered].returning.toLocaleString()}</p>
+                  <p className="text-sm" style={{ color: theme.series1 }}>New: {data[hovered].newVisitors.toLocaleString()}</p>
+                  <p className="text-sm" style={{ color: theme.seriesText }}>Returning: {data[hovered].returning.toLocaleString()}</p>
                 </div>
               )}
             </div>
@@ -881,7 +891,7 @@
         <div>
           <div className="flex items-center gap-6 text-sm mb-6">
             <div className="flex items-center gap-2">
-              <div className="w-4 h-4 rounded" style={{ backgroundColor: '#11362A' }} />
+              <div className="w-4 h-4 rounded" style={{ backgroundColor: theme.series1 }} />
               <span className="text-[#2A4639]">All other respondents</span>
             </div>
             <div className="flex items-center gap-2">
@@ -911,7 +921,7 @@
                       className="h-full flex items-center justify-end pr-3"
                       style={{
                         width: `${item.groupA}%`,
-                        backgroundColor: '#11362A'
+                        backgroundColor: theme.series1
                       }}
                     >
                       <span className="text-white text-xs font-semibold px-3 py-1 rounded-full" style={{ backgroundColor: theme.stackedPill }}>{item.groupA}</span>
@@ -1163,14 +1173,15 @@
     // STACKED BAR CHART
     const StackedBarChart = () => {
       const [hovered, setHovered] = useState(null);
-      
-      // Sequential scale: Sidra Green dark→light, continuing into light Warm Grays
+      const theme = React.useContext(ChartThemeContext);
+
+      // Sequential scale from the active theme, dark→light
       const platforms = [
-        { name: 'Facebook', color: '#11362A' },   // Sidra 800
-        { name: 'Instagram', color: '#385C4B' },  // Sidra 600
-        { name: 'LinkedIn', color: '#6E9484' },   // Sidra 400
-        { name: 'Twitter', color: '#A8A8A3' },    // Warm Gray 400
-        { name: 'YouTube', color: '#D6D6D2' },    // Warm Gray 300
+        { name: 'Facebook', color: theme.multi5[0] },
+        { name: 'Instagram', color: theme.multi5[1] },
+        { name: 'LinkedIn', color: theme.multi5[2] },
+        { name: 'Twitter', color: theme.multi5[3] },
+        { name: 'YouTube', color: theme.multi5[4] },
       ];
       
       const data = [
@@ -1262,15 +1273,16 @@
     // DONUT CHART WITH LABELS
     const DonutChartWithLabels = () => {
       const [hovered, setHovered] = useState(null);
-      
-      // Sequential scale: Sidra Green dark→light, continuing into light Warm Grays
+      const theme = React.useContext(ChartThemeContext);
+
+      // Sequential scale from the active theme, dark→light
       const data = [
-        { name: 'Direct', value: 87500, percent: 35, color: '#11362A' },         // Sidra 800
-        { name: 'Organic Search', value: 80000, percent: 32, color: '#385C4B' }, // Sidra 600
-        { name: 'Paid Search', value: 45000, percent: 18, color: '#6E9484' },    // Sidra 400
-        { name: 'Social Media', value: 30000, percent: 12, color: '#A8A8A3' },   // Warm Gray 400
-        { name: 'Referral', value: 10000, percent: 4, color: '#D6D6D2' },        // Warm Gray 300
-        { name: 'Email', value: 5000, percent: 2, color: '#E8E8E5' },            // Warm Gray 200
+        { name: 'Direct', value: 87500, percent: 35, color: theme.donut6[0] },
+        { name: 'Organic Search', value: 80000, percent: 32, color: theme.donut6[1] },
+        { name: 'Paid Search', value: 45000, percent: 18, color: theme.donut6[2] },
+        { name: 'Social Media', value: 30000, percent: 12, color: theme.donut6[3] },
+        { name: 'Referral', value: 10000, percent: 4, color: theme.donut6[4] },
+        { name: 'Email', value: 5000, percent: 2, color: theme.donut6[5] },
       ];
       
       const getPointOnCircle = (percent, offset, radius) => {
@@ -1487,10 +1499,10 @@
     // WAFFLE CHART
     const WaffleChart = () => {
       const theme = React.useContext(ChartThemeContext);
-      // Colors from design system: Sidra Green, themed second series, Neutral
+      // Colors from design system: themed dark series, themed second series, Neutral
       const colors = {
-        automated: '#11362A',      // Sidra Green 800
-        augmented: theme.series2,  // light Sidra 400 (default) / Sage 500
+        automated: theme.series1,  // Sidra 800 (default) / Muted 800 (sage)
+        augmented: theme.series2,  // bright Sidra 400 (default) / Sage 500
         manual: '#D6D6D2',         // Neutral 300
       };
 
@@ -1934,6 +1946,31 @@
           .split('background: #11362A').join(`background: ${chartTheme.bar}`)
           .split('__PILL__').join(chartTheme.pill)
           .split('#6E9484').join(chartTheme.series2);
+      // Trend snippet: #11362A is the primary series (not a bar fill)
+      const themedTrendCode = (code) =>
+        code
+          .split('#11362A').join(chartTheme.series1)
+          .split('#6E9484').join(chartTheme.series2);
+      // Donut snippet: its four hexes map onto the theme's sequential donut scale
+      const themedDonutCode = (code) =>
+        code
+          .split('#11362A').join(chartTheme.donut6[0])
+          .split('#6E9484').join(chartTheme.donut6[2])
+          .split('#A8A8A3').join(chartTheme.donut6[3])
+          .split('#D6D6D2').join(chartTheme.donut6[5]);
+
+      const sidraColors = [
+        { name: '50',  hex: '#E2F9F4' },
+        { name: '100', hex: '#B7EFE3' },
+        { name: '200', hex: '#8FE6D3' },
+        { name: '300', hex: '#67DAC2' },
+        { name: '400', hex: '#2DDBB6' },
+        { name: '500', hex: '#15C7A1' },
+        { name: '600', hex: '#07AF8B' },
+        { name: '700', hex: '#046B54' },
+        { name: '800', hex: '#034638' },
+        { name: '900', hex: '#022921' },
+      ];
 
       const primaryColors = [
         { name: '50', hex: '#F2F5F4' },
@@ -1959,19 +1996,6 @@
         { name: '700', hex: '#525D3E' },
         { name: '800', hex: '#3A422C' },
         { name: '900', hex: '#24291B' },
-      ];
-
-      const tealColors = [
-        { name: '50',  hex: '#EFFCF8' },
-        { name: '100', hex: '#D7F8EE' },
-        { name: '200', hex: '#B5F0E1' },
-        { name: '300', hex: '#8FE6D3' },
-        { name: '400', hex: '#2DDBB6' },
-        { name: '500', hex: '#07AF8B' },
-        { name: '600', hex: '#058C6F' },
-        { name: '700', hex: '#046B54' },
-        { name: '800', hex: '#034A3B' },
-        { name: '900', hex: '#022921' },
       ];
 
       const yellowColors = [
@@ -2040,7 +2064,7 @@
                   <span>Download</span>
                 </button>
               </div>
-              <p className="text-[#9B9B97]">Communications Dashboard — Color & Chart Reference v2.13</p>
+              <p className="text-[#9B9B97]">Communications Dashboard — Color & Chart Reference v2.14</p>
             </div>
 
             <div className="max-w-3xl mx-auto px-8 pb-8">
@@ -2054,7 +2078,29 @@
             <SectionCard
               id="sidra-green"
               title="Primary — Sidra Green"
-              description="Brand color (Qatar Foundation) with 800 as the primary value. Use for buttons, navigation, icons, and key interactive elements."
+              description="Brand ramp extracted from the Comms in Numbers dashboards, with the QF brand green (#034638) at 800. The chart palette: single-series fills at 700, dark series at 800, bright accents at 400, and sequential scales for stacked and part-to-whole charts."
+            >
+              <div className="grid grid-cols-5 md:grid-cols-10 gap-2 mb-6">
+                {sidraColors.map((c, i) => (
+                  <div key={i} className="relative">
+                    <ColorSwatch color={c.hex} name={c.name} hex={c.hex} size="default" />
+                    {c.hex === '#034638' && (
+                      <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-[#0B241C] text-white text-[9px] px-1.5 py-0.5 rounded font-medium whitespace-nowrap">
+                        Brand
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+              <div className="pt-4 border-t border-[#E8E8E5] text-sm text-[#4A7561] space-y-2">
+                <p><span className="font-medium text-[#0B241C]">Ramp construction.</span> Stops are reconciled with actual chart usage in the Comms in Numbers Overview — every chart color is a named stop: 700 (#046B54) for single bars, 800 (#034638) for dark series, 400 (#2DDBB6) for bright accents, and 900–50 for sequential donut and stacked scales.</p>
+              </div>
+            </SectionCard>
+
+            <SectionCard
+              id="sidra-muted"
+              title="Sidra Green — Muted"
+              description="Muted variant of Sidra Green. Use for text, UI chrome, borders, and subdued surfaces — and as the dark base of the Sage chart theme."
             >
               <div className="grid grid-cols-5 md:grid-cols-10 gap-2 mb-6">
                 {primaryColors.map((c, i) => (
@@ -2087,29 +2133,6 @@
                 {sageColors.map((c, i) => (
                   <ColorSwatch key={i} color={c.hex} name={c.name} hex={c.hex} size="default" />
                 ))}
-              </div>
-            </SectionCard>
-
-            <SectionCard
-              id="teal"
-              title="Secondary — Teal"
-              description="Teal-leaning secondary ramp anchored at 400 (#2DDBB6), extracted from the Comms in Numbers dashboards. Used for data visualization series that need a cooler counterpart to Sage — donut segments, stacked bars, and highlight series."
-            >
-              <div className="grid grid-cols-5 md:grid-cols-10 gap-2 mb-6">
-                {tealColors.map((c, i) => (
-                  <div key={i} className="relative">
-                    <ColorSwatch color={c.hex} name={c.name} hex={c.hex} size="default" />
-                    {c.hex === '#2DDBB6' && (
-                      <div className="absolute -top-2 left-1/2 -translate-x-1/2 bg-[#0B241C] text-white text-[9px] px-1.5 py-0.5 rounded font-medium whitespace-nowrap">
-                        Brand
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-              <div className="pt-4 border-t border-[#E8E8E5] text-sm text-[#4A7561] space-y-2">
-                <p><span className="font-medium text-[#0B241C]">Ramp construction.</span> Five stops come straight from the Comms in Numbers Figma donut charts (#8FE6D3, #2DDBB6, #07AF8B, #046B54, #022921); the remaining stops are interpolated to keep each step perceptibly distinct. The brand anchor sits at 400 — peak chroma — with 50–300 as mint tints for backgrounds and fills, and 500–900 deepening toward the Sidra Green family for text and strokes.</p>
-                <p><span className="font-medium text-[#0B241C]">When to reach for it.</span> A second data series alongside Sidra Green, the highlight segment in stacked bars, donut ramps, and anywhere Sage reads too warm or muted against dark green.</p>
               </div>
             </SectionCard>
 
@@ -2299,8 +2322,8 @@
             <SectionCard
               id="trend-line"
               title="Trend Line Chart"
-              description={`Use for showing trends over time. Sidra Green (#11362A) for primary metric, ${chartTheme.series2Name} (${chartTheme.series2}) for secondary.`}
-              code={themedCode(codeSnippets.trendLine)}
+              description={`Use for showing trends over time. ${chartTheme.series1Name} (${chartTheme.series1}) for primary metric, ${chartTheme.series2Name} (${chartTheme.series2}) for secondary.`}
+              code={themedTrendCode(codeSnippets.trendLine)}
             >
               <TrendLineChart />
             </SectionCard>
@@ -2317,7 +2340,7 @@
             <SectionCard
               id="horizontal-stacked"
               title="Horizontal Stacked Bar Chart"
-              description={`Two groups stacked within 100% neutral base. Sidra Green + ${chartTheme.series2Name} on Warm Gray.`}
+              description={`Two groups stacked within 100% neutral base. ${chartTheme.series1Name} + ${chartTheme.series2Name} on Warm Gray.`}
             >
               <HorizontalStackedBarChart />
             </SectionCard>
@@ -2351,7 +2374,7 @@
             <SectionCard
               id="vertical-stacked"
               title="Vertical Stacked Bar Chart"
-              description="Composition breakdown. Sequential scale — Sidra Green dark to light, continuing into light Warm Grays."
+              description={`Composition breakdown. Sequential scale — ${chartTheme.scaleName}.`}
             >
               <StackedBarChart />
             </SectionCard>
@@ -2359,8 +2382,8 @@
             <SectionCard
               id="donut"
               title="Donut Chart with Table"
-              description="Part-to-whole with external labels and color-coded data table. Sequential scale — Sidra Green dark to light, continuing into light Warm Grays."
-              code={codeSnippets.donut}
+              description={`Part-to-whole with external labels and color-coded data table. Sequential scale — ${chartTheme.scaleName}.`}
+              code={themedDonutCode(codeSnippets.donut)}
             >
               <DonutChartWithLabels />
             </SectionCard>
@@ -2559,7 +2582,7 @@
                     <div className="w-6 h-8 rounded" style={{ backgroundColor: chartTheme.multiGroup }} />
                     <div className="w-6 h-8 rounded" style={{ backgroundColor: '#D6D6D2' }} />
                   </div>
-                  <p className="text-xs text-[#9AB3A9] mt-2">Sidra + {chartTheme.key === 'default' ? 'Light Sidra' : 'Sage'} + Gray</p>
+                  <p className="text-xs text-[#9AB3A9] mt-2">Sidra + {chartTheme.key === 'default' ? 'Bright Sidra' : 'Sage'} + Gray</p>
                 </div>
                 <div className="bg-[#F5F5F3] rounded-lg p-4 border border-[#E8E8E5]">
                   <p className="text-sm font-semibold text-[#0B241C] mb-2">Categorical</p>
@@ -2586,6 +2609,19 @@
 
             <SectionCard id="changelog" title="Changelog" description="Version history and updates to the design system.">
               <div className="space-y-4">
+                <div className="border-l-2 border-[#034638] pl-4">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-sm font-semibold text-[#0B241C]">v2.14</span>
+                    <span className="text-xs text-[#9AB3A9]">July 7, 2026</span>
+                  </div>
+                  <ul className="text-sm text-[#4A7561] space-y-1">
+                    <li>• Added new Primary — Sidra Green ramp from the Comms in Numbers Figma (brand #034638 at 800), reconciled so every chart color is a named stop</li>
+                    <li>• Renamed the previous primary ramp to Sidra Green — Muted (text, UI chrome, and the Sage chart theme)</li>
+                    <li>• Removed the Teal ramp (its values are absorbed into the new Sidra ramp)</li>
+                    <li>• Recolored the Default chart theme per the Overview dashboard mockup: single bars #046B54, dark series #034638, bright accents #2DDBB6, sequential scales #022921→#E2F9F4 for stacked/donut charts</li>
+                    <li>• Sage theme unchanged</li>
+                  </ul>
+                </div>
                 <div className="border-l-2 border-[#737370] pl-4">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-sm font-semibold text-[#0B241C]">v2.13</span>
