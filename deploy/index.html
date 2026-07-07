@@ -142,9 +142,10 @@
     const CHART_THEMES = {
       default: {
         key: 'default', label: 'Default', shortName: 'Sidra',
-        bar: '#11362A', barName: 'Sidra Green',            // single-color bar fills
+        bar: '#4A7561', barName: 'Sidra Green',            // single-color bar fills (Sidra 500)
         series2: '#6E9484', series2Name: 'light Sidra Green', // second series / stacked segment
-        pill: '#4A7561',                                    // value pills sitting on bars
+        pill: '#11362A',                                    // value pills sitting on bars (Sidra 800)
+        stackedPill: '#737370',                             // stacked bar pills (sit on #11362A + #6E9484)
         multiGroup: '#6E9484',                              // usage-guide multi-group swatch
       },
       sage: {
@@ -152,6 +153,7 @@
         bar: '#889A68', barName: 'Sage',
         series2: '#889A68', series2Name: 'Sage',
         pill: '#434340',
+        stackedPill: '#434340',
         multiGroup: '#BDC8AB',
       },
     };
@@ -912,7 +914,7 @@
                         backgroundColor: '#11362A'
                       }}
                     >
-                      <span className="text-white text-xs font-semibold px-3 py-1 rounded-full" style={{ backgroundColor: theme.pill }}>{item.groupA}</span>
+                      <span className="text-white text-xs font-semibold px-3 py-1 rounded-full" style={{ backgroundColor: theme.stackedPill }}>{item.groupA}</span>
                     </div>
                     <div
                       className="h-full flex items-center justify-end pr-3"
@@ -921,7 +923,7 @@
                         backgroundColor: theme.series2
                       }}
                     >
-                      <span className="text-white text-xs font-semibold px-3 py-1 rounded-full" style={{ backgroundColor: theme.pill }}>{item.groupB}</span>
+                      <span className="text-white text-xs font-semibold px-3 py-1 rounded-full" style={{ backgroundColor: theme.stackedPill }}>{item.groupB}</span>
                     </div>
                   </div>
                 </div>
@@ -1048,7 +1050,7 @@
                       <span
                         className="text-xs font-semibold text-white px-3 py-1 rounded-full mb-2 transition-all duration-200"
                         style={{
-                          backgroundColor: '#434340',
+                          backgroundColor: theme.pill,
                           opacity: hovered !== null && hovered !== i ? 0.4 : 1
                         }}
                       >
@@ -1927,8 +1929,10 @@
       // Swap themed hexes inside the copyable code snippets (no-ops in default mode)
       const themedCode = (code) =>
         code
+          .split('background: #4A7561').join('background: __PILL__')
+          .split('background: #434340').join('background: __PILL__')
           .split('background: #11362A').join(`background: ${chartTheme.bar}`)
-          .split('background: #4A7561').join(`background: ${chartTheme.pill}`)
+          .split('__PILL__').join(chartTheme.pill)
           .split('#6E9484').join(chartTheme.series2);
 
       const primaryColors = [
@@ -2036,7 +2040,7 @@
                   <span>Download</span>
                 </button>
               </div>
-              <p className="text-[#9B9B97]">Communications Dashboard — Color & Chart Reference v2.12</p>
+              <p className="text-[#9B9B97]">Communications Dashboard — Color & Chart Reference v2.13</p>
             </div>
 
             <div className="max-w-3xl mx-auto px-8 pb-8">
@@ -2582,6 +2586,17 @@
 
             <SectionCard id="changelog" title="Changelog" description="Version history and updates to the design system.">
               <div className="space-y-4">
+                <div className="border-l-2 border-[#737370] pl-4">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-sm font-semibold text-[#0B241C]">v2.13</span>
+                    <span className="text-xs text-[#9AB3A9]">July 7, 2026</span>
+                  </div>
+                  <ul className="text-sm text-[#4A7561] space-y-1">
+                    <li>• Default theme bar charts lightened from Sidra 800 (#11362A) to Sidra 500 (#4A7561)</li>
+                    <li>• Value pills on those bars now use dark Sidra 800 (#11362A) for contrast; stacked bar keeps Warm Gray 500 (#737370) pills on its dark + light segments</li>
+                    <li>• Sage theme unchanged: sage bars with the original #434340 pills</li>
+                  </ul>
+                </div>
                 <div className="border-l-2 border-[#11362A] pl-4">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-sm font-semibold text-[#0B241C]">v2.12</span>
