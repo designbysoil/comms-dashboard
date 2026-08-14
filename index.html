@@ -147,7 +147,6 @@
         series2: '#2DDBB6', series2Name: 'bright Sidra',    // second series / stacked segment (Sidra 400)
         seriesText: '#07AF8B',                              // second-series tooltip text (Sidra 600)
         pill: '#022921',                                    // value pills sitting on bars (Sidra 900)
-        stackedPill: '#737370',                             // stacked bar pills (sit on dark + bright segments)
         multiGroup: '#2DDBB6',                              // usage-guide multi-group swatch
         multi5: ['#022921', '#046B54', '#07AF8B', '#2DDBB6', '#B7EFE3'],           // vertical stacked, sequential
         donut6: ['#022921', '#046B54', '#07AF8B', '#2DDBB6', '#8FE6D3', '#E2F9F4'], // donut, sequential
@@ -160,7 +159,6 @@
         series2: '#889A68', series2Name: 'Sage',
         seriesText: '#889A68',
         pill: '#434340',
-        stackedPill: '#434340',
         multiGroup: '#BDC8AB',
         multi5: ['#11362A', '#385C4B', '#6E9484', '#A8A8A3', '#D6D6D2'],
         donut6: ['#11362A', '#385C4B', '#6E9484', '#A8A8A3', '#D6D6D2', '#E8E8E5'],
@@ -493,12 +491,84 @@
       </section>
     );
 
+    // LOGO TILE — preview + colorway toggle + SVG/PNG downloads
+    const LogoTile = ({ base, previewHeight, dims }) => {
+      const [variant, setVariant] = useState('green');
+      const suffix = variant === 'white' ? '-white' : '';
+      const onDark = variant === 'white';
+      const svgHref = `assets/logo/svg/${base}${suffix}.svg`;
+      const pngHref = (w) => `assets/logo/png/${base}${suffix}-${w}.png`;
+
+      const btnClass = "inline-flex items-center gap-1.5 text-xs text-[#0B241C] bg-[#E8E8E5] hover:bg-[#D6D6D2] px-2.5 py-1.5 rounded-md transition-colors";
+
+      const SmallDownloadIcon = () => (
+        <svg width="11" height="11" viewBox="0 0 32 32" fill="currentColor">
+          <path d="M26 24v4H6v-4H4v4a2 2 0 0 0 2 2h20a2 2 0 0 0 2-2v-4z"/>
+          <polygon points="16 22 6 12 7.41 10.59 15 18.17 15 2 17 2 17 18.17 24.59 10.59 26 12 16 22"/>
+        </svg>
+      );
+
+      return (
+        <div className="space-y-3">
+          {/* Preview */}
+          <div
+            className="rounded-lg border flex items-center justify-center px-8 transition-colors"
+            style={{
+              backgroundColor: onDark ? '#0B241C' : '#F5F5F3',
+              borderColor: onDark ? '#0B241C' : '#E8E8E5',
+              minHeight: previewHeight + 80,
+            }}
+          >
+            <img src={svgHref} alt="" style={{ height: previewHeight, width: 'auto' }} />
+          </div>
+
+          {/* Colorway + downloads */}
+          <div className="flex flex-wrap items-center gap-2">
+            <div className="flex rounded-md overflow-hidden border border-[#E8E8E5]">
+              {[['green', 'Green'], ['white', 'White']].map(([v, label]) => (
+                <button
+                  key={v}
+                  onClick={() => setVariant(v)}
+                  className="px-2.5 py-1.5 text-xs transition-colors"
+                  style={{
+                    backgroundColor: variant === v ? '#0B241C' : '#FFFFFF',
+                    color: variant === v ? '#FFFFFF' : '#4A7561',
+                  }}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+
+            <span className="text-xs text-[#9AB3A9] ml-1">Download</span>
+            <a href={svgHref} download className={btnClass}>
+              SVG
+              <SmallDownloadIcon />
+            </a>
+            {[500, 1000, 2000].map((w) => (
+              <a key={w} href={pngHref(w)} download className={btnClass}>
+                PNG {w}
+                <SmallDownloadIcon />
+              </a>
+            ))}
+          </div>
+
+          <p className="text-xs font-mono text-[#9AB3A9]">{base}{suffix} · {dims} · PNG is transparent</p>
+        </div>
+      );
+    };
+
     // SIDEBAR NAVIGATION (Art Direction Guide style - exact match)
     const Sidebar = () => {
       const [activeId, setActiveId] = useState('');
 
       // Flat list of all nav items for scroll tracking
       const navItems = [
+        { id: 'brand', label: 'Brand', isSection: true },
+        { id: 'logo-primary', label: 'Primary Lockup', isSection: false },
+        { id: 'logo-vertical', label: 'Vertical Lockup', isSection: false },
+        { id: 'logo-symbol', label: 'Sidra Symbol', isSection: false },
+        { id: 'logo-usage', label: 'Logo Usage', isSection: false },
         { id: 'colors', label: 'Colors', isSection: true },
         { id: 'sidra-green', label: 'Sidra Green', isSection: false },
         { id: 'sidra-muted', label: 'Sidra Muted', isSection: false },
@@ -924,7 +994,7 @@
                         backgroundColor: theme.series1
                       }}
                     >
-                      <span className="text-white text-xs font-semibold px-3 py-1 rounded-full" style={{ backgroundColor: theme.stackedPill }}>{item.groupA}</span>
+                      <span className="text-white text-xs font-semibold px-3 py-1 rounded-full" style={{ backgroundColor: theme.pill }}>{item.groupA}</span>
                     </div>
                     <div
                       className="h-full flex items-center justify-end pr-3"
@@ -933,7 +1003,7 @@
                         backgroundColor: theme.series2
                       }}
                     >
-                      <span className="text-white text-xs font-semibold px-3 py-1 rounded-full" style={{ backgroundColor: theme.stackedPill }}>{item.groupB}</span>
+                      <span className="text-white text-xs font-semibold px-3 py-1 rounded-full" style={{ backgroundColor: theme.pill }}>{item.groupB}</span>
                     </div>
                   </div>
                 </div>
@@ -1383,14 +1453,16 @@
     const Treemap = () => {
       const [hovered, setHovered] = useState(null);
       
+      // Mix of Sidra Green (800/600/400), Warm Gray (700/500), and Sidra Muted (500/300).
+      // Light fills sit on the tiles that use dark text (Arts, Healthcare).
       const data = [
-        { name: 'Technology & Development', percent: 26.1, color: '#4A6B8A', size: 'large' },
-        { name: 'Education & Research', percent: 10.7, color: '#6B7D3D', size: 'medium' },
-        { name: 'Arts & Entertainment', percent: 9.1, color: '#B8B4D4', size: 'medium' },
-        { name: 'Life Sciences', percent: 7.9, color: '#1A3530', size: 'small' },
-        { name: 'Business & Finance', percent: 7.4, color: '#D4847A', size: 'small' },
-        { name: 'Healthcare', percent: 2.8, color: '#C4B49A', size: 'tiny' },
-        { name: 'Community', percent: 2.6, color: '#889A68', size: 'tiny' },
+        { name: 'Technology & Development', percent: 26.1, color: '#034638', size: 'large' },  // Sidra 800
+        { name: 'Education & Research', percent: 10.7, color: '#07AF8B', size: 'medium' },     // Sidra 600
+        { name: 'Arts & Entertainment', percent: 9.1, color: '#9AB3A9', size: 'medium' },      // Muted 300
+        { name: 'Life Sciences', percent: 7.9, color: '#737370', size: 'small' },              // Warm Gray 500
+        { name: 'Business & Finance', percent: 7.4, color: '#4A7561', size: 'small' },         // Muted 500
+        { name: 'Healthcare', percent: 2.8, color: '#2DDBB6', size: 'tiny' },                  // Sidra 400
+        { name: 'Community', percent: 2.6, color: '#434340', size: 'tiny' },                   // Warm Gray 700
       ];
       
       return (
@@ -1474,9 +1546,10 @@
 
     // INDEX SCALE
     const IndexScale = () => {
+      // Sidra Green ramp, 50 → 900
       const colors = [
-        '#E8EEEB', '#D0DDD5', '#B8CCBF', '#9EBAA9', 
-        '#84A893', '#6A967D', '#508467', '#3D7253', '#2A6040', '#11362A'
+        '#E2F9F4', '#B7EFE3', '#8FE6D3', '#67DAC2',
+        '#2DDBB6', '#15C7A1', '#07AF8B', '#046B54', '#034638', '#022921'
       ];
       
       return (
@@ -2064,13 +2137,126 @@
                   <span>Download</span>
                 </button>
               </div>
-              <p className="text-[#9B9B97]">Communications Dashboard — Color & Chart Reference v2.14</p>
+              <p className="text-[#9B9B97]">Communications Dashboard — Brand, Color & Chart Reference v2.16</p>
             </div>
 
             <div className="max-w-3xl mx-auto px-8 pb-8">
 
+            {/* BRAND — LOGO */}
+            <div id="brand" className="mb-8 scroll-mt-6">
+              <h2 className="text-xl font-semibold text-[#0B241C]">Brand</h2>
+              <p className="text-sm text-[#4A7561] mt-1">
+                Official Qatar Foundation logo files. Use SVG wherever the tool accepts it — it stays sharp at any size.
+                Use PNG (transparent) for PowerPoint, Word and anything that can't place vectors.
+              </p>
+              <a
+                href="assets/qf-logos.zip"
+                download
+                className="inline-flex items-center gap-1.5 text-sm text-[#0B241C] bg-[#E8E8E5] hover:bg-[#D6D6D2] px-3 py-1.5 rounded-md transition-colors mt-4"
+              >
+                Download all logos (.zip)
+                <DownloadIcon />
+              </a>
+            </div>
+
+            <SectionCard
+              id="logo-primary"
+              title="Primary Lockup — Bilingual"
+              description="The default QF logo: Arabic over English with the Sidra tree to the right."
+            >
+              <LogoTile base="qf-logo-horizontal" previewHeight={54} dims="299 × 68" />
+              <p className="text-sm text-[#4A7561] mt-5">
+                Use this version wherever there is horizontal room — document headers and footers, presentation title slides,
+                email signatures, report covers, website headers. It is the first choice in almost every situation.
+              </p>
+            </SectionCard>
+
+            <SectionCard
+              id="logo-vertical"
+              title="Vertical Lockup — Bilingual"
+              description="Stacked version: Sidra tree above the Arabic and English wordmarks."
+            >
+              <LogoTile base="qf-logo-vertical" previewHeight={110} dims="137 × 99" />
+              <p className="text-sm text-[#4A7561] mt-5">
+                Use when the space is narrow or square — social profile images, event backdrops, roll-ups, merchandise,
+                or any layout where the horizontal lockup would have to be set too small to read.
+              </p>
+            </SectionCard>
+
+            <SectionCard
+              id="logo-symbol"
+              title="Sidra Symbol"
+              description="The Sidra tree on its own, without wordmarks."
+            >
+              <LogoTile base="qf-logo-sidra" previewHeight={104} dims="152 × 98" />
+              <p className="text-sm text-[#4A7561] mt-5">
+                Use only where QF is already clearly identified elsewhere on the same surface — app icons, favicons,
+                social avatars, watermarks, slide corners after a branded opening slide. The symbol is not a replacement
+                for the full lockup on first appearance.
+              </p>
+            </SectionCard>
+
+            <SectionCard
+              id="logo-usage"
+              title="Logo Usage"
+              description="Colorways, sizing and clear space."
+            >
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-sm font-semibold text-[#0B241C] mb-2">Colorways</h3>
+                  <div className="flex flex-wrap gap-3">
+                    <div className="flex items-center gap-2 bg-[#F5F5F3] rounded-lg px-3 py-2">
+                      <span className="w-5 h-5 rounded" style={{ backgroundColor: '#044437' }} />
+                      <span className="text-xs text-[#4A7561]">Logo green <code className="font-mono">#044437</code> — light backgrounds</span>
+                    </div>
+                    <div className="flex items-center gap-2 bg-[#F5F5F3] rounded-lg px-3 py-2">
+                      <span className="w-5 h-5 rounded border border-[#E0E0DC]" style={{ backgroundColor: '#FFFFFF' }} />
+                      <span className="text-xs text-[#4A7561]">White <code className="font-mono">#FFFFFF</code> — dark backgrounds and photography</span>
+                    </div>
+                  </div>
+                  <p className="text-xs text-[#9AB3A9] mt-2">
+                    These two are the only approved colorways. Note the artwork green (#044437) is the logo's own value —
+                    it is close to, but not the same as, Sidra Green 800 (#034638) used for UI and charts.
+                  </p>
+                </div>
+
+                <div>
+                  <h3 className="text-sm font-semibold text-[#0B241C] mb-2">Clear space</h3>
+                  <p className="text-sm text-[#4A7561]">
+                    Keep clear space on all four sides equal to the height of the Sidra tree's trunk (roughly a quarter of the
+                    logo's total height). Nothing — text, image edges, rules or other logos — sits inside that margin.
+                  </p>
+                </div>
+
+                <div>
+                  <h3 className="text-sm font-semibold text-[#0B241C] mb-2">Minimum size</h3>
+                  <div className="space-y-1 text-sm text-[#4A7561]">
+                    <p>• Primary lockup — <span className="font-mono text-xs">140px</span> wide on screen, <span className="font-mono text-xs">35mm</span> in print</p>
+                    <p>• Vertical lockup — <span className="font-mono text-xs">80px</span> wide on screen, <span className="font-mono text-xs">20mm</span> in print</p>
+                    <p>• Sidra symbol — <span className="font-mono text-xs">24px</span> wide on screen, <span className="font-mono text-xs">8mm</span> in print</p>
+                  </div>
+                </div>
+
+                <div>
+                  <h3 className="text-sm font-semibold text-[#0B241C] mb-2">Don't</h3>
+                  <div className="space-y-1 text-sm text-[#4A7561]">
+                    <p>• Recolor the logo, apply gradients, shadows, outlines or transparency</p>
+                    <p>• Stretch, squash, rotate or crop any part of the lockup</p>
+                    <p>• Rebuild the lockup — never re-set the wordmark in another typeface or re-space the tree</p>
+                    <p>• Place the green logo on dark or busy backgrounds; use the white version instead</p>
+                    <p>• Use the symbol alone where QF is not otherwise identified</p>
+                  </div>
+                </div>
+
+                <p className="text-xs text-[#9AB3A9] border-t border-[#E8E8E5] pt-4">
+                  Source files: <code className="font-mono">assets/logo/svg/</code> and <code className="font-mono">assets/logo/png/</code>.
+                  PNGs are exported at 500 / 1000 / 2000px wide with transparent backgrounds.
+                </p>
+              </div>
+            </SectionCard>
+
             {/* COLOR PALETTES */}
-            <div id="colors" className="mb-8 scroll-mt-6">
+            <div id="colors" className="mt-16 mb-8 pt-8 border-t border-[#E8E8E5] scroll-mt-6">
               <h2 className="text-xl font-semibold text-[#0B241C]">Color Palettes</h2>
               <p className="text-sm text-[#4A7561] mt-1">Click any swatch to copy hex value.</p>
             </div>
@@ -2391,7 +2577,7 @@
             <SectionCard
               id="treemap"
               title="Treemap"
-              description="Proportional area for hierarchical data. Use categorical palette."
+              description="Proportional area for hierarchical data. Mixes Sidra Green, Warm Gray, and Sidra Muted values for distinct adjacent tiles."
             >
               <Treemap />
             </SectionCard>
@@ -2609,6 +2795,29 @@
 
             <SectionCard id="changelog" title="Changelog" description="Version history and updates to the design system.">
               <div className="space-y-4">
+                <div className="border-l-2 border-[#044437] pl-4">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-sm font-semibold text-[#0B241C]">v2.16</span>
+                    <span className="text-xs text-[#9AB3A9]">August 14, 2026</span>
+                  </div>
+                  <ul className="text-sm text-[#4A7561] space-y-1">
+                    <li>• Added a Brand section with downloadable logo files: primary bilingual lockup, vertical bilingual lockup, and the Sidra symbol on its own</li>
+                    <li>• Each logo is available in green (#044437) and white, as SVG and as transparent PNG at 500 / 1000 / 2000px wide</li>
+                    <li>• Added a "Download all logos (.zip)" bundle and a Logo Usage card covering colorways, clear space, minimum sizes and misuse</li>
+                    <li>• Assets live in <code className="font-mono text-xs">assets/logo/</code>, generated from the official QF logo exports</li>
+                  </ul>
+                </div>
+                <div className="border-l-2 border-[#07AF8B] pl-4">
+                  <div className="flex items-center gap-2 mb-1">
+                    <span className="text-sm font-semibold text-[#0B241C]">v2.15</span>
+                    <span className="text-xs text-[#9AB3A9]">July 7, 2026</span>
+                  </div>
+                  <ul className="text-sm text-[#4A7561] space-y-1">
+                    <li>• Geographic / Index Scale now uses the new Sidra Green ramp (#E2F9F4 → #022921)</li>
+                    <li>• Treemap recolored with a mix of Sidra Green (800/600/400), Warm Gray (700/500), and Sidra Muted (500/300)</li>
+                    <li>• Horizontal stacked bar pills now match the other charts' pills (dark #022921 in Default, #434340 in Sage)</li>
+                  </ul>
+                </div>
                 <div className="border-l-2 border-[#034638] pl-4">
                   <div className="flex items-center gap-2 mb-1">
                     <span className="text-sm font-semibold text-[#0B241C]">v2.14</span>
@@ -2778,7 +2987,7 @@
 
             {/* Footer */}
             <div className="mt-8 text-center text-sm text-[#9AB3A9]">
-              Click any color swatch to copy hex value • QF Design System v2.4
+              Click any color swatch to copy hex value • QF Design System v2.16
             </div>
             </div>
           </div>
